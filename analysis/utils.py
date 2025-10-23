@@ -3,7 +3,7 @@ Utility Functions
 
 Common utility functions for data loading, cleaning, and transformation.
 
-Author: Alejandro Arecuest
+Author: Alejandro Arévalo
 """
 
 import pandas as pd
