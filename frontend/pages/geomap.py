@@ -9,8 +9,10 @@ def show_geomap():
     if events_file and stations_file:
         events_df = pd.read_csv(events_file)
         stations_df = pd.read_csv(stations_file)
-        st.write("Stations Data")
+        st.subheader("Stations Data")
         st.dataframe(stations_df)
-        st.write("Events Data")
+        st.subheader("Events Data")
         st.dataframe(events_df)
         plot_geo_map(events_df, stations_df)
+    else:
+        st.info("Please upload both events and station metadata files to view the geographic map.")

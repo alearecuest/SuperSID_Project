@@ -7,7 +7,9 @@ def show_spectrogram():
     uploaded_file = st.file_uploader("Upload your SID data file (CSV)", type="csv", key="sid_spec")
     if uploaded_file:
         df = pd.read_csv(uploaded_file, parse_dates=['timestamp'])
-        st.write("Data Sample")
+        st.subheader("Data Sample")
         st.dataframe(df.head())
-        st.write("Spectrogram")
+        st.subheader("Spectrogram")
         plot_spectrogram(df)
+    else:
+        st.info("Please upload your SID data file to view the spectrogram.")

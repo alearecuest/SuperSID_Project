@@ -1,10 +1,17 @@
 import streamlit as st
-from analysis.comparisons import plot_intensity_vs_duration
+import pandas as pd
+from analysis.comparisons import plot_intensity_vs_duration, plot_seasonal_trend
 
 def show_comparisons():
     st.header("Advanced Comparisons")
-    events_df = st.session_state.get('events_df')
-    if events_df is not None:
+    events_file = st.file_uploader("Upload SID events data (CSV)", type="csv", key="events_comp")
+    if events_file:
+        events_df = pd.read_csv(events_file, parse_dates=['start', 'end'])
+        st.subheader("Events Data")
+        st.dataframe(events_df)
+        st.subheader("Intensity vs Duration")
         plot_intensity_vs_duration(events_df)
+        st.subheader("Seasonal Trend")
+        plot_seasonal_trend(events_df)
     else:
-        st.warning("Please process SID statistics first in the Statistics page.")
+        st.info("Please upload events data to view comparisons.")
