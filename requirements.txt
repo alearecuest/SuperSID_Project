@@ -1,8 +1,11 @@
+streamlit
+pillow
 pandas
-numpy
 matplotlib
-scipy
 scikit-learn
+numpy
+scipy
 plotly
-seaborn
 jupyter
+seaborn
+sounddevice
