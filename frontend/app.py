@@ -1,8 +1,3 @@
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../analysis')))
-
 import streamlit as st
 from PIL import Image
 from pages.statistics import show_statistics
@@ -14,6 +9,7 @@ from pages.comparisons import show_comparisons
 from pages.station_power import show_station_power
 from pages.date_duration import show_date_duration
 from pages.ftp_upload import show_ftp_upload
+from pages.realtime_audio import show_realtime_audio  # <-- NUEVA PÁGINA
 
 OBSERVATORY_NUMBER = 281
 CALL_SIGN = "NWC"
@@ -50,8 +46,8 @@ page = st.sidebar.radio(
         "Comparisons",
         "Station & Power",
         "Date & Duration",
+        "Realtime Audio",  # <-- NUEVO MENÚ
         "Send to Stanford (FTP)",
-        "Realtime Audio",
     )
 )
 
@@ -71,10 +67,10 @@ elif page == "Station & Power":
     show_station_power()
 elif page == "Date & Duration":
     show_date_duration()
-elif page == "Send to Stanford (FTP)":
-    show_ftp_upload(OBSERVATORY_NUMBER, CALL_SIGN)
 elif page == "Realtime Audio":
     show_realtime_audio()
+elif page == "Send to Stanford (FTP)":
+    show_ftp_upload(OBSERVATORY_NUMBER, CALL_SIGN)
 
 st.markdown("---")
 st.markdown("**SuperSID Advanced Analysis Frontend - Powered by Stanford Solar Center**")
