@@ -9,7 +9,7 @@ from pages.comparisons import show_comparisons
 from pages.station_power import show_station_power
 from pages.date_duration import show_date_duration
 from pages.ftp_upload import show_ftp_upload
-from pages.realtime_audio import show_realtime_audio  # <-- NUEVA PÁGINA
+from pages.realtime_audio import show_realtime_audio
 
 OBSERVATORY_NUMBER = 281
 CALL_SIGN = "NWC"
@@ -46,7 +46,7 @@ page = st.sidebar.radio(
         "Comparisons",
         "Station & Power",
         "Date & Duration",
-        "Realtime Audio",  # <-- NUEVO MENÚ
+        "Realtime Audio",
         "Send to Stanford (FTP)",
     )
 )
