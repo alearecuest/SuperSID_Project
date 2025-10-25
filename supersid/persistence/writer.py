@@ -49,23 +49,25 @@ class ParquetWriter:
         base = self.root / dt
         base.mkdir(exist_ok=True)
 
-        # Signals
+        # Signals: store each channel’s signal as a list in one row
         for name, x in banded.items():
-            table = pa.table({
-                "ts": [ts],
-                "channel": [name],
-                "signal": [pa.array(x)]
-            })
+            table = pa.Table.from_pylist([{
+                "ts": ts,
+                "channel": name,
+                "signal": x.tolist()
+            }])
             pq.write_to_dataset(table, base / "signals", partition_cols=["channel"])
 
         # Features
         rows = [{"ts": ts, "channel": n, **f} for n, f in feats.items()]
         if rows:
-            pq.write_to_dataset(pa.table(rows), base / "features", partition_cols=["channel"])
+            table = pa.Table.from_pylist(rows)
+            pq.write_to_dataset(table, base / "features", partition_cols=["channel"])
 
         # Events
         if events:
-            pq.write_to_dataset(pa.table(events), base / "events")
+            table = pa.Table.from_pylist(events)
+            pq.write_to_dataset(table, base / "events")
 
         # Metadata sidecar (once per day)
         sidecar = base / "metadata.json"
