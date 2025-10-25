@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Next-generation SuperSID platform: acquisition, DSP, API, and UI."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { file = "LICENSE" }
+license = "MIT"
 authors = [
   { name = "Alejandro Arévalo" }
 ]
@@ -33,6 +33,9 @@ dev = [
   "pre-commit>=3.8"
 ]
 
+[tool.setuptools]
+packages = ["supersid"]
+
 [tool.ruff]
 line-length = 100
 select = ["E","W","F","I","B","C","Q","S"]
@@ -45,3 +48,7 @@ strict = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --cov=supersid --cov-report=term-missing"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

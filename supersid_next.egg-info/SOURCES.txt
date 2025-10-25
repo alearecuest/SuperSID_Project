@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+supersid/__init__.py
+supersid_next.egg-info/PKG-INFO
+supersid_next.egg-info/SOURCES.txt
+supersid_next.egg-info/dependency_links.txt
+supersid_next.egg-info/requires.txt
+supersid_next.egg-info/top_level.txt
+tests/test_config_loader.py
