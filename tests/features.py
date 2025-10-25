@@ -3,6 +3,7 @@ Tests for the feature extraction module.
 """
 
 import numpy as np
+
 from supersid.processing.features import SlidingFeatures
 
 

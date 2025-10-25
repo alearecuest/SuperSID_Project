@@ -3,6 +3,7 @@ Tests for the VLF filtering module.
 """
 
 import numpy as np
+
 from supersid.processing.filters import VLFChannel, VLFChannelBank
 
 

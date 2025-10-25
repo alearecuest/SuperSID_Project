@@ -2,24 +2,28 @@
 Tests for the configuration loader.
 """
 
+import pytest
+
 from supersid.utils.config_loader import load_config
-from pathlib import Path
 
 
 def test_load_config(tmp_path):
     # Create temporary transmitter catalog
     tx_file = tmp_path / "transmitters.toml"
-    tx_file.write_text("""
+    tx_file.write_text(
+        """
 [[transmitters]]
 name = "TEST1"
 freq = 12345
 bw = 40
 location = "Nowhere"
-""")
+"""
+    )
 
     # Create temporary observatory config
     obs_file = tmp_path / "obs.toml"
-    obs_file.write_text("""
+    obs_file.write_text(
+        """
 [observatory]
 code = "#999"
 location = "Testland"
@@ -40,7 +44,8 @@ sensitivity = 0.8
 name = "TEST1"
 freq = 12345
 bw = 40
-""")
+"""
+    )
 
     cfg = load_config(str(obs_file), str(tx_file))
 
@@ -49,3 +54,10 @@ bw = 40
     assert len(cfg["channels"]) == 1
     assert cfg["channels"][0]["name"] == "TEST1"
     assert cfg["channels"][0]["freq"] == 12345
+
+
+def test_load_config_file_not_found(tmp_path):
+    fake_file = tmp_path / "nope.toml"
+    # Both obs_file and tx_file point to non-existent file
+    with pytest.raises(FileNotFoundError):
+        load_config(str(fake_file), str(fake_file))

@@ -4,9 +4,11 @@ Tests for the persistence ParquetWriter module, without pandas dependency.
 
 import os
 import tempfile
+from datetime import datetime, timezone
+
 import numpy as np
 import pyarrow.parquet as pq
-from datetime import datetime, timezone
+
 from supersid.persistence.writer import ParquetWriter
 
 
@@ -28,8 +30,7 @@ def test_parquet_writer_creates_parquet_files():
 
         # Compute expected day directory dynamically
         daydir = os.path.join(
-            tmpdir,
-            datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y%m%d")
+            tmpdir, datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y%m%d")
         )
         assert os.path.isdir(daydir)
 

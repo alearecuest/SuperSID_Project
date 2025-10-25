@@ -1,27 +1,38 @@
 """
-Feature extraction module for SuperSID Next.
+Feature extraction utilities for SuperSID Next.
 
-Computes basic signal features such as RMS, MAD, and SNR
-over sliding windows for each VLF channel.
+Provides basic statistical features (RMS, MAD, SNR) and a class
+for computing them over sliding windows.
 """
 
 import numpy as np
 
 
+def rms(x: np.ndarray) -> float:
+    """Root Mean Square of a signal."""
+    return float(np.sqrt(np.mean(np.square(x))))
+
+
+def mad(x: np.ndarray) -> float:
+    """Mean Absolute Deviation of a signal."""
+    return float(np.mean(np.abs(x - np.mean(x))))
+
+
+def snr(signal: np.ndarray, noise: np.ndarray) -> float:
+    """Signal-to-Noise Ratio in dB."""
+    p_signal = np.mean(signal**2)
+    p_noise = np.mean(noise**2)
+    return 10 * np.log10(p_signal / p_noise) if p_noise > 0 else float("inf")
+
+
 class SlidingFeatures:
-    """Compute features over sliding windows for multiple channels."""
+    """
+    Compute features over sliding windows for multiple channels.
+    """
 
     def __init__(self, window_samples: int, step_samples: int):
-        """
-        Parameters
-        ----------
-        window_samples : int
-            Number of samples in each analysis window.
-        step_samples : int
-            Step size between consecutive windows.
-        """
-        self.win = window_samples
-        self.step = step_samples
+        self.window_samples = window_samples
+        self.step_samples = step_samples
 
     def compute(self, banded: dict[str, np.ndarray]) -> dict[str, dict[str, float]]:
         """
@@ -39,11 +50,19 @@ class SlidingFeatures:
         """
         feats: dict[str, dict[str, float]] = {}
         for name, x in banded.items():
-            if len(x) < self.win:
+            if len(x) < self.window_samples:
                 continue
-            w = x[-self.win:]
-            rms = float(np.sqrt(np.mean(w**2)))
-            mad = float(np.median(np.abs(w - np.median(w))))
-            snr = float(rms / (mad + 1e-6))
-            feats[name] = {"rms": rms, "mad": mad, "snr": snr}
+            window = x[-self.window_samples :]
+            feats[name] = {
+                "rms": rms(window),
+                "mad": mad(window),
+                "snr": snr(
+                    window,
+                    (
+                        x[: -self.window_samples]
+                        if len(x) > self.window_samples
+                        else np.zeros_like(window)
+                    ),
+                ),
+            }
         return feats

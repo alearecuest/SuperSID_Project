@@ -65,8 +65,12 @@ class EventDetector:
         events = []
         for name, f in feats.items():
             b = self.base.get(name, f["rms"])
-            if cusum_detect(f["rms"], b, self.k, self.h, self.state.setdefault(name, {})):
-                events.append({"channel": name, "type": "sid_candidate", "value": f["rms"]})
+            if cusum_detect(
+                f["rms"], b, self.k, self.h, self.state.setdefault(name, {})
+            ):
+                events.append(
+                    {"channel": name, "type": "sid_candidate", "value": f["rms"]}
+                )
             # update baseline slowly
             self.base[name] = 0.99 * b + 0.01 * f["rms"]
         return events

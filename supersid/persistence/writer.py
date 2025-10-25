@@ -6,11 +6,12 @@ with associated metadata.
 """
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
+
+import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
-import numpy as np
-from datetime import datetime, timezone
 
 
 class ParquetWriter:
@@ -29,8 +30,9 @@ class ParquetWriter:
         self.root.mkdir(parents=True, exist_ok=True)
         self.meta = metadata
 
-    def write_frame(self, ts: float, banded: dict[str, np.ndarray],
-                    feats: dict, events: list[dict]):
+    def write_frame(
+        self, ts: float, banded: dict[str, np.ndarray], feats: dict, events: list[dict]
+    ):
         """
         Write one frame of data to disk.
 
@@ -51,11 +53,9 @@ class ParquetWriter:
 
         # Signals: store each channel’s signal as a list in one row
         for name, x in banded.items():
-            table = pa.Table.from_pylist([{
-                "ts": ts,
-                "channel": name,
-                "signal": x.tolist()
-            }])
+            table = pa.Table.from_pylist(
+                [{"ts": ts, "channel": name, "signal": x.tolist()}]
+            )
             pq.write_to_dataset(table, base / "signals", partition_cols=["channel"])
 
         # Features

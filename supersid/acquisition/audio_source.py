@@ -5,15 +5,16 @@ Provides an AudioSource class to capture audio frames from the system's
 sound card using the sounddevice library.
 """
 
-from dataclasses import dataclass
 import time
-import numpy as np
+from dataclasses import dataclass
+
 import sounddevice as sd
 
 
 @dataclass
 class AudioConfig:
     """Configuration for audio acquisition."""
+
     device: str = "default"
     sample_rate: int = 48000
     channels: int = 1
@@ -30,7 +31,7 @@ class AudioSource:
             samplerate=cfg.sample_rate,
             channels=cfg.channels,
             dtype="float32",
-            blocksize=int(cfg.sample_rate * cfg.chunk_ms / 1000)
+            blocksize=int(cfg.sample_rate * cfg.chunk_ms / 1000),
         )
 
     def __enter__(self):
