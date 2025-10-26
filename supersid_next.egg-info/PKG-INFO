@@ -25,6 +25,7 @@ Requires-Dist: mypy>=1.11; extra == "dev"
 Requires-Dist: ruff>=0.6; extra == "dev"
 Requires-Dist: bandit>=1.7; extra == "dev"
 Requires-Dist: pre-commit>=3.8; extra == "dev"
+Requires-Dist: httpx>=0.27; extra == "dev"
 Dynamic: license-file
 
 # SuperSID Next

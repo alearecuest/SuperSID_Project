@@ -1,23 +1,25 @@
 """
-Configuration loader for SuperSID Next.
+Configuration loader for SuperSID App.
 
-Reads observatory-specific configuration and merges it with
-the global transmitter catalog.
+- Reads observatory-specific configuration (obs_file).
+- Optionally merges with a global transmitter catalog (tx_file).
+- Returns a unified dict with observatory info and enriched channel definitions.
 """
 
 import tomllib
 from pathlib import Path
+from typing import Optional, Dict, Any
 
 
-def load_config(obs_file: str, tx_file: str) -> dict:
+def load_config(obs_file: str, tx_file: Optional[str] = None) -> Dict[str, Any]:
     """
-    Load observatory configuration and merge with global transmitters.
+    Load observatory configuration and optionally merge with global transmitters.
 
     Parameters
     ----------
     obs_file : str
         Path to observatory TOML file (e.g., montevideo.toml).
-    tx_file : str
+    tx_file : str, optional
         Path to global transmitters TOML file.
 
     Returns
@@ -25,20 +27,28 @@ def load_config(obs_file: str, tx_file: str) -> dict:
     dict
         Combined configuration with observatory info and selected channels.
     """
-    obs = tomllib.loads(Path(obs_file).read_text(encoding="utf-8"))
-    txs = tomllib.loads(Path(tx_file).read_text(encoding="utf-8"))
+    obs_path = Path(obs_file)
+    if not obs_path.exists():
+        raise FileNotFoundError(f"Observatory config not found: {obs_path}")
 
-    # Build a lookup for transmitters
-    tx_lookup = {t["name"]: t for t in txs["transmitters"]}
+    obs = tomllib.loads(obs_path.read_text(encoding="utf-8"))
 
-    # Replace channels in observatory config with full info from catalog
-    channels = []
-    for c in obs.get("channels", []):
-        if c["name"] in tx_lookup:
-            merged = {**tx_lookup[c["name"]], **c}
-            channels.append(merged)
-        else:
-            channels.append(c)
+    # If a global transmitter catalog is provided, merge it
+    if tx_file:
+        tx_path = Path(tx_file)
+        if not tx_path.exists():
+            raise FileNotFoundError(f"Transmitters file not found: {tx_path}")
 
-    obs["channels"] = channels
+        txs = tomllib.loads(tx_path.read_text(encoding="utf-8"))
+        tx_lookup = {t["name"]: t for t in txs.get("transmitters", [])}
+
+        channels = []
+        for c in obs.get("channels", []):
+            if c["name"] in tx_lookup:
+                merged = {**tx_lookup[c["name"]], **c}
+                channels.append(merged)
+            else:
+                channels.append(c)
+        obs["channels"] = channels
+
     return obs
