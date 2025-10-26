@@ -7,26 +7,37 @@ interface FFTData {
   spectrum: number[];
 }
 
-export default function Spectrogram() {
-  const [history, setHistory] = useState<{ freq: number; time: number; power: number }[]>([]);
+interface Props {
+  channel: string;
+}
+
+export default function Spectrogram({ channel }: Props) {
+  const [history, setHistory] = useState<
+    { freq: number; time: number; power: number }[]
+  >([]);
   const [time, setTime] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      api.get<FFTData>("/fft", { params: { channel: "DHO38" } }).then((res) => {
-        const { freqs, spectrum } = res.data;
-        const newPoints = freqs.map((f, i) => ({
-          freq: f,
-          time,
-          power: spectrum[i],
-        }));
-        setHistory((prev) => [...prev.slice(-5000), ...newPoints]);
-        setTime((t) => t + 1);
-      });
+      api
+        .get<FFTData>("/fft", { params: { channel } })
+        .then((res) => {
+          const { freqs, spectrum } = res.data;
+          const newPoints = freqs.map((f, i) => ({
+            freq: f,
+            time,
+            power: spectrum[i],
+          }));
+          setHistory((prev) => [...prev.slice(-5000), ...newPoints]);
+          setTime((t) => t + 1);
+        })
+        .catch((err) => {
+          console.error("Error fetching FFT:", err);
+        });
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [time]);
+  }, [channel, time]);
 
   const config = {
     data: history,
@@ -38,7 +49,7 @@ export default function Spectrogram() {
 
   return (
     <div>
-      <h3>Spectrogram (DHO38)</h3>
+      <h3>Spectrogram ({channel})</h3>
       <Heatmap {...config} />
     </div>
   );
