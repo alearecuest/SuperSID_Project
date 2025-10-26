@@ -2,6 +2,7 @@ import Header from "../components/Header";
 import StatusCard from "../components/StatusCard";
 import ChannelsList from "../components/ChannelsList";
 import RmsChart from "../components/RmsChart";
+import Spectrogram from "../components/Spectrogram";
 
 export default function Dashboard() {
   return (
@@ -10,6 +11,7 @@ export default function Dashboard() {
       <StatusCard />
       <ChannelsList />
       <RmsChart />
+      <Spectrogram />
     </div>
   );
 }
