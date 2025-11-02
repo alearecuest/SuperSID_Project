@@ -5,30 +5,49 @@ import DataVisualization from './pages/DataVisualization';
 import StationManager from './pages/StationManager';
 import Analysis from './pages/Analysis';
 import Settings from './pages/Settings';
+import ObservatorySetup from './pages/ObservatorySetup';
+import SelectVLFStations from './pages/SelectVLFStations';
 
-type PageType = 'dashboard' | 'visualization' | 'stations' | 'analysis' | 'settings';
+type PageType = 'setup' | 'stations' | 'dashboard' | 'visualization' | 'analysis' | 'settings';
 
 interface AppState {
   currentPage: PageType;
   isConnected: boolean;
   isDarkMode: boolean;
-  stationId: number;
+  observatoryId: number;
+  monitoredStations: string[];
+  isSetupComplete: boolean;
 }
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>({
-    currentPage: 'dashboard',
+    currentPage: 'setup',
     isConnected: false,
     isDarkMode: true,
-    stationId: 281,
+    observatoryId: 281, // Tu observatorio
+    monitoredStations: [],
+    isSetupComplete: false,
   });
 
   useEffect(() => {
-    // Initialize app
     console.log('SuperSID Pro Analytics - Application Started');
-    // Connect to backend
     initializeConnection();
+    loadSavedState();
   }, []);
+
+  const loadSavedState = () => {
+    // Aquí cargaremos estado guardado del localStorage más adelante
+    const saved = localStorage.getItem('appState');
+    if (saved) {
+      const parsedState = JSON.parse(saved);
+      setAppState(prev => ({ ...prev, ...parsedState }));
+    }
+  };
+
+  const saveState = (newState: AppState) => {
+    localStorage.setItem('appState', JSON.stringify(newState));
+    setAppState(newState);
+  };
 
   const initializeConnection = async () => {
     try {
@@ -42,28 +61,58 @@ const App: React.FC = () => {
     }
   };
 
+  const handleObservatorySet = (observatoryId: number) => {
+    const newState = {
+      ...appState,
+      observatoryId,
+      currentPage: 'stations' as PageType,
+    };
+    saveState(newState);
+  };
+
+  const handleStationsChange = (stationIds: string[]) => {
+    const newState = {
+      ...appState,
+      monitoredStations: stationIds,
+      isSetupComplete: stationIds.length > 0,
+      currentPage: appState.isSetupComplete ? 'dashboard' : ('stations' as PageType),
+    };
+    saveState(newState);
+  };
+
   const handlePageChange = (page: PageType) => {
     setAppState(prev => ({ ...prev, currentPage: page }));
   };
 
-  const handleStationChange = (stationId: number) => {
-    setAppState(prev => ({ ...prev, stationId }));
-  };
-
   const renderCurrentPage = () => {
     switch (appState.currentPage) {
-      case 'dashboard':
-        return <Dashboard stationId={appState.stationId} />;
-      case 'visualization':
-        return <DataVisualization stationId={appState.stationId} />;
+      case 'setup':
+        return (
+          <ObservatorySetup
+            observatoryId={appState.observatoryId}
+            onObservatorySet={handleObservatorySet}
+          />
+        );
       case 'stations':
-        return <StationManager onStationChange={handleStationChange} />;
+        return (
+          <SelectVLFStations
+            observatoryId={appState.observatoryId}
+            observatoryLat={37.4419}
+            observatoryLon={-122.1430}
+            selectedStations={appState.monitoredStations}
+            onStationsChange={handleStationsChange}
+          />
+        );
+      case 'dashboard':
+        return <Dashboard stationId={appState.observatoryId} />;
+      case 'visualization':
+        return <DataVisualization stationId={appState.observatoryId} />;
       case 'analysis':
-        return <Analysis stationId={appState.stationId} />;
+        return <Analysis stationId={appState.observatoryId} />;
       case 'settings':
         return <Settings />;
       default:
-        return <Dashboard stationId={appState.stationId} />;
+        return <Dashboard stationId={appState.observatoryId} />;
     }
   };
 
@@ -72,9 +121,9 @@ const App: React.FC = () => {
       currentPage={appState.currentPage}
       isConnected={appState.isConnected}
       isDarkMode={appState.isDarkMode}
-      stationId={appState.stationId}
+      stationId={appState.observatoryId}
       onPageChange={handlePageChange}
-      onStationChange={handleStationChange}
+      onStationChange={() => {}}
     >
       {renderCurrentPage()}
     </Layout>

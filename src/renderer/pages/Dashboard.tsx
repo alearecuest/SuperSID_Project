@@ -38,7 +38,6 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
-      // Simulated data - replace with actual API call
       const mockData: SignalData[] = [
         { frequency: 24000, amplitude: 0.85, timestamp: new Date().toISOString() },
         { frequency: 25200, amplitude: 0.72, timestamp: new Date(Date.now() - 60000).toISOString() },
@@ -79,7 +78,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
       {/* Stats Grid */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">📊</div>
+          <div className="stat-icon"></div>
           <div className="stat-content">
             <div className="stat-label">Total Observations</div>
             <div className="stat-value">{stats.totalObservations.toLocaleString()}</div>
@@ -87,7 +86,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">⚡</div>
+          <div className="stat-icon"></div>
           <div className="stat-content">
             <div className="stat-label">SID Events Detected</div>
             <div className="stat-value">{stats.sidEventsDetected}</div>
@@ -95,7 +94,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">⏱️</div>
+          <div className="stat-icon"></div>
           <div className="stat-content">
             <div className="stat-label">System Uptime</div>
             <div className="stat-value">{stats.uptime}</div>
@@ -103,7 +102,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">🕐</div>
+          <div className="stat-icon"></div>
           <div className="stat-content">
             <div className="stat-label">Last Update</div>
             <div className="stat-value">
@@ -166,16 +165,16 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
       {/* Quick Actions */}
       <div className="quick-actions">
         <button className="btn-primary">
-          <span>🔴</span> Start Recording
+          <span></span> Start Recording
         </button>
         <button className="btn-secondary">
-          <span>⬇️</span> Export Data
+          <span></span> Export Data
         </button>
         <button className="btn-secondary">
-          <span>📋</span> View Reports
+          <span></span> View Reports
         </button>
         <button className="btn-secondary">
-          <span>🔧</span> Calibrate
+          <span></span> Calibrate
         </button>
       </div>
     </div>

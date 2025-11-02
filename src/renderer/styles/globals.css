@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles for SuperSID Pro Analytics */
 
 :root {
   --color-primary: #0ea5e9;
@@ -48,7 +47,6 @@ body {
   flex-direction: column;
 }
 
-/* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   line-height: 1.2;
@@ -76,7 +74,6 @@ p {
   color: var(--color-text-muted);
 }
 
-/* Links */
 a {
   color: var(--color-primary);
   text-decoration: none;
@@ -87,14 +84,12 @@ a:hover {
   color: var(--color-primary-dark);
 }
 
-/* Buttons */
 button {
   font-family: inherit;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-/* Form elements */
 input, textarea, select {
   background-color: rgba(15, 23, 42, 0.5);
   border: 1px solid var(--color-border);
@@ -111,7 +106,6 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -130,7 +124,6 @@ input:focus, textarea:focus, select:focus {
   background: var(--color-primary);
 }
 
-/* Custom utility classes */
 .glass-effect {
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(10px);
@@ -182,7 +175,6 @@ input:focus, textarea:focus, select:focus {
   color: var(--color-error);
 }
 
-/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -224,7 +216,6 @@ input:focus, textarea:focus, select:focus {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   h1 {
     font-size: 1.875rem;

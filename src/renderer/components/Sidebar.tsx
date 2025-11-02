@@ -25,8 +25,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          <span className="logo-icon">🛰️</span>
-          <span className="logo-text">SuperSID Pro</span>
+					<img
+						src="/logo.png"
+						alt="SuperSID Pro"
+						className="logo-image"
+					/>
+					<span className="logo-text">SuperSID Pro</span>
         </div>
       </div>
 

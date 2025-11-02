@@ -32,7 +32,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     config: configStorage.getConfig(),
   });
 
-  const [stations, setStations] = useState<Station[]>([]);
+  const [stations] = useState<Station[]>([]);
   const [selectedStation, setSelectedStationState] = useState<Station | null>(null);
   const [isHealthy, setIsHealthy] = useState(false);
   const [lastHealthCheck, setLastHealthCheck] = useState<string | null>(null);

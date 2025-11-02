@@ -1,6 +1,6 @@
 import { app, BrowserWindow, Menu, ipcMain } from 'electron';
 import * as path from 'path';
-import * as isDev from 'electron-is-dev';
+import isDev from 'electron-is-dev';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -13,7 +13,6 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      enableRemoteModule: false,
       nodeIntegration: false,
     },
     icon: path.join(__dirname, '../../assets/icon.png'),
@@ -21,7 +20,7 @@ const createWindow = () => {
 
   const startUrl = isDev
     ? 'http://localhost:3000'
-    : `file://${path.join(__dirname, '../../out/renderer/index.html')}`;
+    : `file://${path.join(__dirname, '../renderer/index.html')}`;
 
   mainWindow.loadURL(startUrl);
 
@@ -84,11 +83,13 @@ const createMenu = () => {
         {
           label: 'About SuperSID Pro',
           click: () => {
+            // TODO: Implementar About dialog
           },
         },
         {
           label: 'Documentation',
           click: () => {
+            // TODO: Abrir documentación
           },
         },
       ],
@@ -99,7 +100,6 @@ const createMenu = () => {
   Menu.setApplicationMenu(menu);
 };
 
-// IPC Handlers
 ipcMain.handle('get-app-version', () => {
   return app.getVersion();
 });

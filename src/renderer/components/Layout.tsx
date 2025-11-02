@@ -35,7 +35,7 @@ const Layout: React.FC<LayoutProps> = ({
       <div className="layout-main">
         <Header
           isConnected={isConnected}
-          stationId={stationId}
+          observatoryId={stationId}
           onStationChange={onStationChange}
           isDarkMode={isDarkMode}
           onMenuToggle={() => setSidebarOpen(!sidebarOpen)}

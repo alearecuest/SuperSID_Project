@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { SIDEvent } from '../types';
-import { getEvents, getSIDEvents } from '../utils/api';
+import { getSIDEvents } from '../utils/api';
 import { logger } from '../utils/logger';
 
 interface UseEventsOptions {

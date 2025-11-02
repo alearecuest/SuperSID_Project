@@ -30,7 +30,6 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({ stationId }) => {
   const loadVisualizationData = async () => {
     try {
       setIsLoading(true);
-      // Simulated data
       const mockFrequencyData: FrequencyData[] = [
         { frequency: 19800, amplitude: 0.85, phase: 45 },
         { frequency: 22100, amplitude: 0.72, phase: 30 },

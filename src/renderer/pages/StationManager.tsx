@@ -139,7 +139,7 @@ const StationManager: React.FC<StationManagerProps> = ({ onStationChange }) => {
           />
         </div>
         <button className="btn-primary" onClick={() => setShowAddModal(true)}>
-          ➕ Add Station
+          Add Station
         </button>
       </div>
 
@@ -186,14 +186,14 @@ const StationManager: React.FC<StationManagerProps> = ({ onStationChange }) => {
 
             <div className="station-stats">
               <div className="stat">
-                <span className="stat-icon">📊</span>
+                <span className="stat-icon"></span>
                 <div>
                   <div className="stat-label">Observations</div>
                   <div className="stat-value">{station.observations.toLocaleString()}</div>
                 </div>
               </div>
               <div className="stat">
-                <span className="stat-icon">🕐</span>
+                <span className="stat-icon"></span>
                 <div>
                   <div className="stat-label">Last Sync</div>
                   <div className="stat-value">
@@ -207,9 +207,9 @@ const StationManager: React.FC<StationManagerProps> = ({ onStationChange }) => {
             </div>
 
             <div className="station-actions">
-              <button className="btn-small btn-secondary">🔧 Configure</button>
-              <button className="btn-small btn-secondary">📥 Sync</button>
-              <button className="btn-small btn-secondary">📋 Details</button>
+              <button className="btn-small btn-secondary">Configure</button>
+              <button className="btn-small btn-secondary">Sync</button>
+              <button className="btn-small btn-secondary">Details</button>
             </div>
           </div>
         ))}
