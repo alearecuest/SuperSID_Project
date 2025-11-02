@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { configService } from '../services/config.service';
 import '../styles/pages.css';
 
 interface ObservatorySetupProps {
@@ -40,7 +41,7 @@ const ObservatorySetup: React.FC<ObservatorySetupProps> = ({ observatoryId, onOb
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateObservatoryId(inputId)) {
@@ -48,14 +49,37 @@ const ObservatorySetup: React.FC<ObservatorySetupProps> = ({ observatoryId, onOb
     }
 
     const newId = parseInt(inputId);
-    console.log('Observatory configured:', {
+    console.log('🔧 Observatory configured:', {
       id: newId,
       ...formData,
     });
 
-    onObservatorySet(newId);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      // GUARDAR EN CONFIG SERVICE - ESTO DISPARA EL EVENTO
+      const success = await configService.saveConfig({
+        observatoryId: newId,
+        observatoryName: formData.name,
+        institution: formData.institution,
+        location: formData.location,
+        latitude: parseFloat(formData.latitude) || 0,
+        longitude: parseFloat(formData.longitude) || 0,
+        altitude: parseFloat(formData.altitude) || 0,
+        timezone: formData.timezone,
+        solarCenterApiKey: formData.solarCenterApiKey,
+      });
+
+      if (success) {
+        console.log('✅ Observatory saved to config');
+        onObservatorySet(newId);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      } else {
+        setErrors('Failed to save observatory configuration');
+      }
+    } catch (error) {
+      console.error('Error saving observatory:', error);
+      setErrors('Error saving observatory configuration');
+    }
   };
 
   return (
