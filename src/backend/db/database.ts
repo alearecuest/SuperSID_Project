@@ -16,9 +16,9 @@ if (!fs.existsSync(dataDir)) {
 
 export const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) {
-    console.error('❌ Error opening database:', err);
+    console.error('Error opening database:', err);
   } else {
-    console.log('✅ Connected to SQLite database:', DB_PATH);
+    console.log('Connected to SQLite database:', DB_PATH);
     initializeDatabase();
   }
 });
@@ -28,9 +28,9 @@ export const initializeDatabase = () => {
   
   db.exec(sql, (err) => {
     if (err) {
-      console.error('❌ Error initializing database:', err);
+      console.error('Error initializing database:', err);
     } else {
-      console.log('✅ Database initialized successfully');
+      console.log('Database initialized successfully');
     }
   });
 };

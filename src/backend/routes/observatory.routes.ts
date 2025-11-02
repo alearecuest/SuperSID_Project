@@ -4,7 +4,7 @@ import {
   getObservatory, 
   getObservatoryConfig, 
   updateObservatoryConfig 
-} from '../controllers/observatory.controller';
+} from '../controllers/observatory.controller.ts';
 
 const router = express.Router();
 

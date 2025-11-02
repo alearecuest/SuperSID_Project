@@ -61,20 +61,20 @@ const ObservatorySetup: React.FC<ObservatorySetupProps> = ({ observatoryId, onOb
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1>🔬 Observatory Configuration</h1>
+        <h1>Observatory Configuration</h1>
         <p>Set up your unique VLF observation station for Solar Center integration</p>
       </div>
 
       {saved && (
         <div className="alert alert-success">
-          ✅ Observatory configuration saved successfully!
+          Observatory configuration saved successfully!
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="setup-form">
         {/* OBSERVATORY ID - CRITICAL */}
         <div className="form-section" style={{ borderLeft: '4px solid #0ea5e9' }}>
-          <h2>⭐ Your Observatory ID</h2>
+          <h2>Your Observatory ID</h2>
           <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
             This is your unique identifier in Solar Center. It cannot be changed once registered.
           </p>
@@ -110,7 +110,7 @@ const ObservatorySetup: React.FC<ObservatorySetupProps> = ({ observatoryId, onOb
 
         {/* OBSERVATORY DETAILS */}
         <div className="form-section">
-          <h2>📍 Observatory Details</h2>
+          <h2>Observatory Details</h2>
 
           <div className="form-row">
             <div className="form-group">
@@ -211,7 +211,7 @@ const ObservatorySetup: React.FC<ObservatorySetupProps> = ({ observatoryId, onOb
 
         {/* SOLAR CENTER INTEGRATION */}
         <div className="form-section">
-          <h2>🔐 Solar Center Integration</h2>
+          <h2>Solar Center Integration</h2>
 
           <div className="form-group">
             <label htmlFor="solarCenterApiKey">Solar Center API Key</label>
@@ -229,7 +229,7 @@ const ObservatorySetup: React.FC<ObservatorySetupProps> = ({ observatoryId, onOb
 
         <div className="form-actions">
           <button type="submit" className="btn-primary">
-            💾 Save Observatory Configuration
+            Save Observatory Configuration
           </button>
         </div>
       </form>

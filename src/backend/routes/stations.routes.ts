@@ -4,7 +4,7 @@ import {
   unsubscribeFromStation,
   getSubscribedStations,
   updateSubscriptionStatus
-} from '../controllers/stations.controller';
+} from '../controllers/stations.controller.ts';
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { runAsync, allAsync } from '../db/database';
+import type { Request, Response } from 'express';
+import { runAsync, allAsync } from '../db/database.ts';
 
 export const recordSignal = async (req: Request, res: Response) => {
   try {

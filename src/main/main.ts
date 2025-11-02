@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, ipcMain } from 'electron';
 import * as path from 'path';
 import isDev from 'electron-is-dev';
+import { setupIpcHandlers } from './ipc';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -100,6 +101,9 @@ const createMenu = () => {
   Menu.setApplicationMenu(menu);
 };
 
+// ====================================
+// IPC Handlers
+// ====================================
 ipcMain.handle('get-app-version', () => {
   return app.getVersion();
 });
@@ -112,7 +116,14 @@ ipcMain.handle('get-user-data-path', () => {
   return app.getPath('userData');
 });
 
-app.on('ready', createWindow);
+// ====================================
+// App Events
+// ====================================
+app.on('ready', () => {
+  console.log('🚀 Electron app ready');
+  setupIpcHandlers(); // ✅ AQUÍ se llama cuando app está lista
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

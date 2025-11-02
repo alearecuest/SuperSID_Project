@@ -18,6 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: 'visualization', label: 'Visualization', icon: '📈' },
     { id: 'stations', label: 'Stations', icon: '🛰️' },
     { id: 'analysis', label: 'Analysis', icon: '🔬' },
+    { id: 'observatory-config', label: 'Observatory', icon: '🏛️' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
 

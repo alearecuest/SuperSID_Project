@@ -22,7 +22,6 @@ const SelectVLFStations: React.FC<SelectVLFStationsProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'distance' | 'frequency' | 'name'>('distance');
 
-  // Calcular distancias
   const stationsWithDistance = useMemo(
     () =>
       VLF_STATIONS.map(station => ({
@@ -37,7 +36,6 @@ const SelectVLFStations: React.FC<SelectVLFStationsProps> = ({
     [observatoryLat, observatoryLon]
   );
 
-  // Filtrar estaciones
   const filteredStations = useMemo(() => {
     let result = stationsWithDistance;
 
@@ -58,7 +56,6 @@ const SelectVLFStations: React.FC<SelectVLFStationsProps> = ({
       );
     }
 
-    // Ordenar
     if (sortBy === 'distance') {
       result.sort((a, b) => a.distance - b.distance);
     } else if (sortBy === 'frequency') {
@@ -145,7 +142,7 @@ const SelectVLFStations: React.FC<SelectVLFStationsProps> = ({
           </div>
 
           <div className="filter-group">
-            <label htmlFor="country">🌍 Country</label>
+            <label htmlFor="country">Country</label>
             <select
               id="country"
               value={filterCountry}
@@ -160,7 +157,7 @@ const SelectVLFStations: React.FC<SelectVLFStationsProps> = ({
           </div>
 
           <div className="filter-group">
-            <label htmlFor="status">📊 Status</label>
+            <label htmlFor="status">Status</label>
             <select
               id="status"
               value={filterStatus}
@@ -175,7 +172,7 @@ const SelectVLFStations: React.FC<SelectVLFStationsProps> = ({
           </div>
 
           <div className="filter-group">
-            <label htmlFor="sort">↕️ Sort By</label>
+            <label htmlFor="sort">Sort By</label>
             <select
               id="sort"
               value={sortBy}
@@ -190,10 +187,10 @@ const SelectVLFStations: React.FC<SelectVLFStationsProps> = ({
 
         <div className="filter-actions">
           <button className="btn-secondary" onClick={handleSelectAll}>
-            ✅ Select All
+            Select All
           </button>
           <button className="btn-secondary" onClick={handleDeselectAll}>
-            ❌ Deselect All
+            Deselect All
           </button>
         </div>
       </div>
@@ -240,10 +237,10 @@ const SelectVLFStations: React.FC<SelectVLFStationsProps> = ({
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-								<span>📶 {Array.isArray(station.frequency) ? station.frequency.join(', ') : station.frequency} kHz</span>	
+								<span>{Array.isArray(station.frequency) ? station.frequency.join(', ') : station.frequency} kHz</span>	
                   {station.power && <span>⚡ {station.power} kW</span>}
                   {station.distance !== undefined && (
-                    <span>📏 {Math.round(station.distance)} km</span>
+                    <span>{Math.round(station.distance)} km</span>
                   )}
                 </div>
 

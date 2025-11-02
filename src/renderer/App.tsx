@@ -7,8 +7,9 @@ import Analysis from './pages/Analysis';
 import Settings from './pages/Settings';
 import ObservatorySetup from './pages/ObservatorySetup';
 import SelectVLFStations from './pages/SelectVLFStations';
+import { configService } from './services/config.service';
 
-type PageType = 'setup' | 'stations' | 'dashboard' | 'visualization' | 'analysis' | 'settings';
+type PageType = 'setup' | 'stations' | 'dashboard' | 'visualization' | 'analysis' | 'settings' | 'observatory-config';
 
 interface AppState {
   currentPage: PageType;
@@ -16,37 +17,51 @@ interface AppState {
   isDarkMode: boolean;
   observatoryId: number;
   monitoredStations: string[];
-  isSetupComplete: boolean;
+  isConfigured: boolean;
+  isLoading: boolean;
 }
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>({
-    currentPage: 'setup',
+    currentPage: 'dashboard',
     isConnected: false,
     isDarkMode: true,
-    observatoryId: 281, // Tu observatorio
+    observatoryId: 0,
     monitoredStations: [],
-    isSetupComplete: false,
+    isConfigured: false,
+    isLoading: true,
   });
 
   useEffect(() => {
-    console.log('SuperSID Pro Analytics - Application Started');
-    initializeConnection();
-    loadSavedState();
+    console.log('🚀 SuperSID Pro Analytics - Application Started');
+    initializeApp();
   }, []);
 
-  const loadSavedState = () => {
-    // Aquí cargaremos estado guardado del localStorage más adelante
-    const saved = localStorage.getItem('appState');
-    if (saved) {
-      const parsedState = JSON.parse(saved);
-      setAppState(prev => ({ ...prev, ...parsedState }));
-    }
-  };
+  const initializeApp = async () => {
+    try {
+      // Cargar configuración desde archivo
+      const config = await configService.initialize();
+      
+      // Verificar conexión al backend
+      initializeConnection();
 
-  const saveState = (newState: AppState) => {
-    localStorage.setItem('appState', JSON.stringify(newState));
-    setAppState(newState);
+      // Si está configurado, ir al dashboard
+      const isConfigured = configService.isConfigured();
+      
+      setAppState(prev => ({
+        ...prev,
+        observatoryId: config.observatoryId,
+        monitoredStations: config.monitoredStations,
+        isConfigured,
+        currentPage: isConfigured ? 'dashboard' : 'setup',
+        isLoading: false,
+      }));
+
+      console.log('✅ App initialized. Observatory ID:', config.observatoryId);
+    } catch (error) {
+      console.error('Error initializing app:', error);
+      setAppState(prev => ({ ...prev, isLoading: false }));
+    }
   };
 
   const initializeConnection = async () => {
@@ -54,30 +69,68 @@ const App: React.FC = () => {
       const response = await fetch('http://localhost:3001/api/health');
       if (response.ok) {
         setAppState(prev => ({ ...prev, isConnected: true }));
+        console.log('✅ Connected to backend');
       }
     } catch (error) {
-      console.error('Failed to connect to backend:', error);
+      console.error('❌ Failed to connect to backend:', error);
       setAppState(prev => ({ ...prev, isConnected: false }));
     }
   };
 
-  const handleObservatorySet = (observatoryId: number) => {
-    const newState = {
-      ...appState,
-      observatoryId,
-      currentPage: 'stations' as PageType,
-    };
-    saveState(newState);
+  const handleObservatorySet = async (observatoryData: any) => {
+    try {
+      // Guardar en config file
+      await configService.saveObservatory(observatoryData);
+
+      // Guardar también en backend
+      const response = await fetch('http://localhost:3001/api/observatory/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(observatoryData),
+      });
+
+      if (response.ok) {
+        setAppState(prev => ({
+          ...prev,
+          observatoryId: observatoryData.id,
+          isConfigured: true,
+          currentPage: 'stations',
+        }));
+        console.log('✅ Observatory saved');
+      }
+    } catch (error) {
+      console.error('Error saving observatory:', error);
+    }
   };
 
-  const handleStationsChange = (stationIds: string[]) => {
-    const newState = {
-      ...appState,
-      monitoredStations: stationIds,
-      isSetupComplete: stationIds.length > 0,
-      currentPage: appState.isSetupComplete ? 'dashboard' : ('stations' as PageType),
-    };
-    saveState(newState);
+  const handleStationsChange = async (stationIds: string[]) => {
+    try {
+      // Guardar en config file
+      await configService.updateMonitoredStations(stationIds);
+
+      // Guardar en backend
+      if (appState.observatoryId > 0) {
+        for (const stationId of stationIds) {
+          await fetch('http://localhost:3001/api/stations/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              observatoryId: appState.observatoryId,
+              stationId,
+            }),
+          });
+        }
+      }
+
+      setAppState(prev => ({
+        ...prev,
+        monitoredStations: stationIds,
+        currentPage: stationIds.length > 0 ? 'dashboard' : 'stations',
+      }));
+      console.log('✅ Monitored stations updated');
+    } catch (error) {
+      console.error('Error updating stations:', error);
+    }
   };
 
   const handlePageChange = (page: PageType) => {
@@ -85,6 +138,16 @@ const App: React.FC = () => {
   };
 
   const renderCurrentPage = () => {
+    if (appState.isLoading) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+          <div style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
+            <p>Loading SuperSID Pro...</p>
+          </div>
+        </div>
+      );
+    }
+
     switch (appState.currentPage) {
       case 'setup':
         return (
@@ -101,6 +164,13 @@ const App: React.FC = () => {
             observatoryLon={-122.1430}
             selectedStations={appState.monitoredStations}
             onStationsChange={handleStationsChange}
+          />
+        );
+      case 'observatory-config':
+        return (
+          <ObservatorySetup
+            observatoryId={appState.observatoryId}
+            onObservatorySet={handleObservatorySet}
           />
         );
       case 'dashboard':
