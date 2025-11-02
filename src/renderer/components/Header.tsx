@@ -1,24 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { configService } from '../services/config.service';
+import { configObserverService } from '../services/config-observer.service';
 import '../styles/header.css';
 
 interface HeaderProps {
   isConnected: boolean;
-  observatoryId: number;
   isDarkMode: boolean;
   onMenuToggle: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   isConnected,
-  observatoryId,
   onMenuToggle,
 }) => {
-  const currentTime = new Date().toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
+  const [currentTime, setCurrentTime] = useState<string>('00:00:00');
+  const [observatoryId, setObservatoryId] = useState<number>(0);
+
+  useEffect(() => {
+    // Cargar observatoryId inicial
+    const updateObservatoryId = () => {
+      const id = configService.getObservatoryId();
+      console.log('📡 Header - Observatory ID loaded:', id);
+      setObservatoryId(id);
+    };
+
+    updateObservatoryId();
+
+    // Suscribirse a cambios de configuración
+    const unsubscribe = configObserverService.subscribe(() => {
+      console.log('🔔 Header - Config changed, updating Observatory ID');
+      updateObservatoryId();
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Actualizar hora cada segundo
+    const updateTime = () => {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      });
+      setCurrentTime(timeString);
+    };
+
+    updateTime();
+    const timeInterval = setInterval(updateTime, 1000);
+
+    return () => {
+      clearInterval(timeInterval);
+    };
+  }, []);
 
   return (
     <header className="header">
@@ -26,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({
         <button className="menu-toggle" onClick={onMenuToggle} title="Toggle menu">
           ☰
         </button>
-        
+
         <div className="header-title">
           <h1>SuperSID Pro Analytics</h1>
           <p className="subtitle">Professional VLF Signal Detection & Analysis</p>

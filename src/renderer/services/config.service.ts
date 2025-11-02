@@ -1,3 +1,5 @@
+import { configObserverService } from './config-observer.service';
+
 export interface AppConfig {
   observatoryId: number;
   observatoryName: string;
@@ -65,18 +67,36 @@ export class ConfigService {
   }
 
   getConfig(): AppConfig {
-    return this.config;
+    return this.loadConfig();
+  }
+
+  getObservatoryId(): number {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem(CONFIG_KEY);
+        if (stored) {
+          const loaded = JSON.parse(stored);
+          return loaded.observatoryId || 0;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading observatory ID:', error);
+    }
+    return 0;
   }
 
   async saveConfig(partial: Partial<AppConfig>): Promise<boolean> {
     try {
       this.config = { ...this.config, ...partial, lastUpdated: new Date().toISOString() };
-      
+
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(this.config));
+        console.log('✅ Config saved to localStorage:', this.config);
+        
+        // Notificar a todos los observadores
+        configObserverService.notifyChange();
       }
-      
-      console.log('✅ Config saved');
+
       return true;
     } catch (error) {
       console.error('Error saving config:', error);
