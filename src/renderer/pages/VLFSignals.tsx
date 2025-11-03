@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { analysisService, VLFData } from '../services/analysis.service';
+import VLFSignalsChart from '../components/VLFSignalsChart';
 import '../styles/pages.css';
 
 const VLFSignals: React.FC<{ observatoryId?: number }> = ({ observatoryId = 999 }) => {
@@ -119,7 +120,24 @@ const VLFSignals: React.FC<{ observatoryId?: number }> = ({ observatoryId = 999 
         </div>
       </div>
 
-      {/* RECENT SIGNALS */}
+      {/* CHARTS */}
+      {vlsData.signals.length > 0 && (
+        <VLFSignalsChart
+          data={vlsData.signals}
+          title="Signal Amplitude & Quality Trend"
+          type="line"
+        />
+      )}
+
+      {vlsData.signals.length > 0 && (
+        <VLFSignalsChart
+          data={vlsData.signals}
+          title="Signal Distribution"
+          type="bar"
+        />
+      )}
+
+      {/* RECENT SIGNALS TABLE */}
       <div className="section-card">
         <h2>Recent Signals (Last 60)</h2>
         {vlsData.signals.length > 0 ? (

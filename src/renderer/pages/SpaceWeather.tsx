@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { analysisService, SolarActivity } from '../services/analysis.service';
+import SpaceWeatherChart from '../components/SpaceWeatherChart';
 import '../styles/pages.css';
 
 const SpaceWeather: React.FC = () => {
   const [current, setCurrent] = useState<SolarActivity | null>(null);
   const [forecast, setForecast] = useState<SolarActivity[]>([]);
+  const [history, setHistory] = useState<SolarActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
 
@@ -18,6 +20,8 @@ const SpaceWeather: React.FC = () => {
         ]);
         setCurrent(currentData);
         setForecast(forecastData);
+        
+        setHistory([currentData]);
         setError('');
       } catch (err) {
         console.error('Error loading space weather:', err);
@@ -57,6 +61,7 @@ const SpaceWeather: React.FC = () => {
         <p>Current solar activity and forecasts from spaceweatherlive.com</p>
       </div>
 
+      {/* CURRENT METRICS */}
       <div className="section-card">
         <h2>Current Solar Activity</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
@@ -111,6 +116,24 @@ const SpaceWeather: React.FC = () => {
         </div>
       </div>
 
+      {/* CHARTS */}
+      {history.length > 0 && (
+        <SpaceWeatherChart
+          data={history}
+          title="K-Index Trend"
+          type="area"
+        />
+      )}
+
+      {history.length > 0 && (
+        <SpaceWeatherChart
+          data={history}
+          title="Solar Flux Trend"
+          type="line"
+        />
+      )}
+
+      {/* FORECAST */}
       {forecast.length > 0 && (
         <div className="section-card">
           <h2>27-Day Forecast</h2>
