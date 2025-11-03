@@ -59,7 +59,7 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({ stationId }) => {
           <div className="visualization-container">
             <div className="spectrogram-placeholder">
               <div className="placeholder-content">
-                <span className="placeholder-icon">📊</span>
+                <span className="placeholder-icon"></span>
                 <p>Spectrogram View</p>
                 <small>Real-time frequency analysis over time</small>
               </div>

@@ -50,7 +50,7 @@ export class AudioService {
       };
 
       this.mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log('✅ Audio capture started for device:', deviceId);
+      console.log('Audio capture started for device:', deviceId);
       return this.mediaStream;
     } catch (error) {
       console.error('Error starting audio capture:', error);
@@ -62,7 +62,7 @@ export class AudioService {
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = null;
-      console.log('⏹️ Audio capture stopped');
+      console.log('Audio capture stopped');
     }
   }
 

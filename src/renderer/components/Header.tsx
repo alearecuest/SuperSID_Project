@@ -17,18 +17,16 @@ const Header: React.FC<HeaderProps> = ({
   const [observatoryId, setObservatoryId] = useState<number>(0);
 
   useEffect(() => {
-    // Cargar observatoryId inicial
     const updateObservatoryId = () => {
       const id = configService.getObservatoryId();
-      console.log('📡 Header - Observatory ID loaded:', id);
+      console.log('Header - Observatory ID loaded:', id);
       setObservatoryId(id);
     };
 
     updateObservatoryId();
 
-    // Suscribirse a cambios de configuración
     const unsubscribe = configObserverService.subscribe(() => {
-      console.log('🔔 Header - Config changed, updating Observatory ID');
+      console.log('Header - Config changed, updating Observatory ID');
       updateObservatoryId();
     });
 
@@ -38,7 +36,6 @@ const Header: React.FC<HeaderProps> = ({
   }, []);
 
   useEffect(() => {
-    // Actualizar hora cada segundo
     const updateTime = () => {
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-US', {

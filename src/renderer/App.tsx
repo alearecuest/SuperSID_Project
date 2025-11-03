@@ -33,19 +33,16 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    console.log('🚀 SuperSID Pro Analytics - Application Started');
+    console.log('SuperSID Pro Analytics - Application Started');
     initializeApp();
   }, []);
 
   const initializeApp = async () => {
     try {
-      // Cargar configuración desde archivo
       const config = await configService.initialize();
       
-      // Verificar conexión al backend
       initializeConnection();
 
-      // Si está configurado, ir al dashboard
       const isConfigured = configService.isConfigured();
       
       setAppState(prev => ({
@@ -57,7 +54,7 @@ const App: React.FC = () => {
         isLoading: false,
       }));
 
-      console.log('✅ App initialized. Observatory ID:', config.observatoryId);
+      console.log('App initialized. Observatory ID:', config.observatoryId);
     } catch (error) {
       console.error('Error initializing app:', error);
       setAppState(prev => ({ ...prev, isLoading: false }));
@@ -69,20 +66,18 @@ const App: React.FC = () => {
       const response = await fetch('http://localhost:3001/api/health');
       if (response.ok) {
         setAppState(prev => ({ ...prev, isConnected: true }));
-        console.log('✅ Connected to backend');
+        console.log('Connected to backend');
       }
     } catch (error) {
-      console.error('❌ Failed to connect to backend:', error);
+      console.error('Failed to connect to backend:', error);
       setAppState(prev => ({ ...prev, isConnected: false }));
     }
   };
 
   const handleObservatorySet = async (observatoryData: any) => {
     try {
-      // Guardar en config file
       await configService.saveObservatory(observatoryData);
 
-      // Guardar también en backend
       const response = await fetch('http://localhost:3001/api/observatory/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,7 +91,7 @@ const App: React.FC = () => {
           isConfigured: true,
           currentPage: 'stations',
         }));
-        console.log('✅ Observatory saved');
+        console.log('Observatory saved');
       }
     } catch (error) {
       console.error('Error saving observatory:', error);
@@ -105,10 +100,8 @@ const App: React.FC = () => {
 
   const handleStationsChange = async (stationIds: string[]) => {
     try {
-      // Guardar en config file
       await configService.updateMonitoredStations(stationIds);
 
-      // Guardar en backend
       if (appState.observatoryId > 0) {
         for (const stationId of stationIds) {
           await fetch('http://localhost:3001/api/stations/subscribe', {
@@ -127,7 +120,7 @@ const App: React.FC = () => {
         monitoredStations: stationIds,
         currentPage: stationIds.length > 0 ? 'dashboard' : 'stations',
       }));
-      console.log('✅ Monitored stations updated');
+      console.log('Monitored stations updated');
     } catch (error) {
       console.error('Error updating stations:', error);
     }

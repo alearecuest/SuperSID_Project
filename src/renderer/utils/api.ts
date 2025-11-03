@@ -156,14 +156,12 @@ export const endpoints = {
     sync: (id: number) => `/api/stations/${id}/sync`,
   },
 
-  // Signals
   signals: {
     list: (stationId: number) => `/api/stations/${stationId}/signals`,
     get: (stationId: number, signalId: string) => `/api/stations/${stationId}/signals/${signalId}`,
     query: (stationId: number) => `/api/stations/${stationId}/signals/query`,
   },
 
-  // Events
   events: {
     list: (stationId: number) => `/api/stations/${stationId}/events`,
     get: (stationId: number, eventId: string) => `/api/stations/${stationId}/events/${eventId}`,
@@ -172,7 +170,6 @@ export const endpoints = {
     delete: (stationId: number, eventId: string) => `/api/stations/${stationId}/events/${eventId}`,
   },
 
-  // Analysis
   analysis: {
     frequency: (stationId: number) => `/api/stations/${stationId}/analysis/frequency`,
     timeseries: (stationId: number) => `/api/stations/${stationId}/analysis/timeseries`,
@@ -180,20 +177,17 @@ export const endpoints = {
     correlation: () => '/api/analysis/correlation',
   },
 
-  // Data
   data: {
     export: () => '/api/data/export',
     import: () => '/api/data/import',
   },
 
-  // Health
   health: {
     status: () => '/api/health/status',
     version: () => '/api/health/version',
   },
 };
 
-// Helper functions
 export async function getStations() {
   return apiClient.get(endpoints.stations.list());
 }

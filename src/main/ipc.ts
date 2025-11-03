@@ -27,7 +27,7 @@ export function setupIpcHandlers() {
   ipcMain.handle('config:save', async (_event, config) => {
     try {
       fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
-      console.log('✅ Config saved to:', CONFIG_FILE);
+      console.log('Config saved to:', CONFIG_FILE);
       return { success: true };
     } catch (error) {
       console.error('Error saving config:', error);

@@ -20,7 +20,6 @@
   background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%);
 }
 
-/* Scrollbar styling for content area */
 .layout-content::-webkit-scrollbar {
   width: 8px;
 }
@@ -38,7 +37,6 @@
   background: rgba(100, 116, 139, 0.8);
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .layout-container {
     flex-direction: column;
@@ -49,7 +47,6 @@
   }
 }
 
-/* Loading and error states */
 .content-loading {
   display: flex;
   align-items: center;

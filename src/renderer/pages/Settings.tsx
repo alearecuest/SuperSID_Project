@@ -75,9 +75,9 @@ const Settings: React.FC = () => {
     });
 
     if (success) {
-      setSaveStatus('✅ Audio settings saved successfully');
+      setSaveStatus('Audio settings saved successfully');
     } else {
-      setSaveStatus('❌ Failed to save audio settings');
+      setSaveStatus('Failed to save audio settings');
     }
 
     setTimeout(() => setSaveStatus(''), 3000);
@@ -85,7 +85,7 @@ const Settings: React.FC = () => {
 
   const handleTestSolarCenterConnection = async () => {
     if (!monitorId) {
-      setConnectionMessage('❌ Please enter your Monitor ID');
+      setConnectionMessage('Please enter your Monitor ID');
       return;
     }
 
@@ -102,12 +102,12 @@ const Settings: React.FC = () => {
       const result = await response.json();
 
       if (result.success) {
-        setConnectionMessage('✅ Connection successful!');
+        setConnectionMessage('Connection successful!');
       } else {
-        setConnectionMessage(`❌ ${result.message}`);
+        setConnectionMessage(`${result.message}`);
       }
     } catch (error: any) {
-      setConnectionMessage(`❌ Error: ${error.message}`);
+      setConnectionMessage(`Error: ${error.message}`);
     }
 
     setTestingConnection(false);
@@ -116,7 +116,7 @@ const Settings: React.FC = () => {
 
   const handleSaveSolarCenter = async () => {
     if (!monitorId) {
-      setSaveStatus('❌ Monitor ID is required');
+      setSaveStatus('Monitor ID is required');
       setTimeout(() => setSaveStatus(''), 3000);
       return;
     }
@@ -133,13 +133,13 @@ const Settings: React.FC = () => {
       });
 
       if (success) {
-        setSaveStatus('✅ Solar Center settings saved successfully');
+        setSaveStatus('Solar Center settings saved successfully');
         window.dispatchEvent(new Event('storage'));
       } else {
-        setSaveStatus('❌ Failed to save settings');
+        setSaveStatus('Failed to save settings');
       }
     } catch (error) {
-      setSaveStatus('❌ Error saving settings');
+      setSaveStatus('Error saving settings');
     }
 
     setTimeout(() => setSaveStatus(''), 3000);
@@ -148,7 +148,7 @@ const Settings: React.FC = () => {
   return (
     <div className="settings-container">
       <div className="settings-header">
-        <h1>⚙️ Settings</h1>
+        <h1>Settings</h1>
         <p>Configure your SuperSID Pro Analytics system</p>
       </div>
 
@@ -161,7 +161,7 @@ const Settings: React.FC = () => {
       {/* Audio Input Settings */}
       <div className="settings-section">
         <div className="settings-section-header">
-          <h2>🔊 Audio Input Settings</h2>
+          <h2>Audio Input Settings</h2>
           <p>Select and configure your audio input device</p>
         </div>
 
@@ -220,13 +220,13 @@ const Settings: React.FC = () => {
             onClick={handleTestAudio}
             disabled={testingAudio}
           >
-            {testingAudio ? '🔄 Testing...' : '🎤 Test Audio Device'}
+            {testingAudio ? 'Testing...' : 'Test Audio Device'}
           </button>
           <button
             className="btn btn-primary"
             onClick={handleSaveAudioSettings}
           >
-            💾 Save Audio Settings
+            Save Audio Settings
           </button>
         </div>
 
@@ -240,7 +240,7 @@ const Settings: React.FC = () => {
       {/* Solar Center Integration */}
       <div className="settings-section">
         <div className="settings-section-header">
-          <h2>☀️ Solar Center Integration</h2>
+          <h2>Solar Center Integration</h2>
           <p>Configure Stanford Solar Center SFTP for data sharing</p>
         </div>
 
@@ -299,13 +299,13 @@ const Settings: React.FC = () => {
             onClick={handleTestSolarCenterConnection}
             disabled={testingConnection || !monitorId}
           >
-            {testingConnection ? '🔄 Testing...' : '🔐 Test SFTP Connection'}
+            {testingConnection ? 'Testing...' : 'Test SFTP Connection'}
           </button>
           <button
             className="btn btn-primary"
             onClick={handleSaveSolarCenter}
           >
-            💾 Save Solar Center Settings
+            Save Solar Center Settings
           </button>
         </div>
 
@@ -335,7 +335,7 @@ const Settings: React.FC = () => {
       {/* System Information */}
       <div className="settings-section">
         <div className="settings-section-header">
-          <h2>ℹ️ System Information</h2>
+          <h2>System Information</h2>
         </div>
 
         <div className="system-info">

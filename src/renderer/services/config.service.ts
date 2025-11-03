@@ -91,9 +91,8 @@ export class ConfigService {
 
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(this.config));
-        console.log('✅ Config saved to localStorage:', this.config);
+        console.log('Config saved to localStorage:', this.config);
         
-        // Notificar a todos los observadores
         configObserverService.notifyChange();
       }
 

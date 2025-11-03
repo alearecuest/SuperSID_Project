@@ -6,8 +6,8 @@ export interface VLFStation {
   country: string;
   latitude: number;
   longitude: number;
-  frequency: number[]; // array porque algunos transmiten en múltiples frecuencias
-  power?: number; // en kW
+  frequency: number[];
+  power?: number;
   purpose: string;
   status: 'active' | 'inactive' | 'intermittent';
 }
@@ -371,7 +371,7 @@ export const calculateDistance = (
   lat2: number,
   lon2: number
 ): number => {
-  const R = 6371; // Radio de la Tierra en km
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =

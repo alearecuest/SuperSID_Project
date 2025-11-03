@@ -49,13 +49,12 @@ const ObservatorySetup: React.FC<ObservatorySetupProps> = ({ observatoryId, onOb
     }
 
     const newId = parseInt(inputId);
-    console.log('🔧 Observatory configured:', {
+    console.log('Observatory configured:', {
       id: newId,
       ...formData,
     });
 
     try {
-      // GUARDAR EN CONFIG SERVICE - ESTO DISPARA EL EVENTO
       const success = await configService.saveConfig({
         observatoryId: newId,
         observatoryName: formData.name,
@@ -69,7 +68,7 @@ const ObservatorySetup: React.FC<ObservatorySetupProps> = ({ observatoryId, onOb
       });
 
       if (success) {
-        console.log('✅ Observatory saved to config');
+        console.log('Observatory saved to config');
         onObservatorySet(newId);
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);

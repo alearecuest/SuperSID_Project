@@ -1,4 +1,3 @@
-// Tabla para registrar uploads a Stanford
 await database.run(`
   CREATE TABLE IF NOT EXISTS solar_center_uploads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

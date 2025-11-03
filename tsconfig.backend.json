@@ -11,13 +11,13 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "declaration": true,
-    "outDir": "./dist/backend",
-    "rootDir": "./src/backend",
-    "baseUrl": "."
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   },
   "include": ["src/backend/**/*"],
-  "exclude": ["node_modules"],
-  "ts-node": {
-    "esm": true
-  }
+  "exclude": ["node_modules", "dist"]
 }
