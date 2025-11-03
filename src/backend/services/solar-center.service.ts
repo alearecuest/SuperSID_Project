@@ -2,7 +2,33 @@ import Client from 'ssh2-sftp-client';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { runAsync, allAsync } from '../db/database.ts';
+import { database } from '../database/index';
+
+function runAsync(sql: string, params: any[] = []): Promise<any> {
+  return new Promise((resolve, reject) => {
+    database.run(sql, params, function(err: any) {
+      if (err) {
+        console.error('Database error:', err);
+        reject(err);
+      } else {
+        resolve({ lastID: this.lastID, changes: this.changes });
+      }
+    });
+  });
+}
+
+function allAsync(sql: string, params: any[] = []): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    database.all(sql, params, (err: any, rows: any[]) => {
+      if (err) {
+        console.error('Database error:', err);
+        reject(err);
+      } else {
+        resolve(rows || []);
+      }
+    });
+  });
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,18 +64,18 @@ export class SolarCenterService {
   private createDataDirectory(): void {
     if (!fs.existsSync(this.DATA_PATH)) {
       fs.mkdirSync(this.DATA_PATH, { recursive: true });
-      console.log(`📁 Created data directory: ${this.DATA_PATH}`);
+      console.log(`Created data directory: ${this.DATA_PATH}`);
     }
   }
 
   setConfig(config: SolarCenterConfig): void {
     this.config = config;
-    console.log(`⚙️ Solar Center config set for monitor: ${config.monitorId}`);
+    console.log(`Solar Center config set for monitor: ${config.monitorId}`);
   }
 
   async validateConnection(monitorId: string): Promise<{ success: boolean; message: string }> {
     try {
-      console.log(`🔐 Testing SFTP connection with monitor ID: ${monitorId}`);
+      console.log(`Testing SFTP connection with monitor ID: ${monitorId}`);
 
       await this.sftp.connect({
         host: this.FTP_SERVER,
@@ -59,12 +85,12 @@ export class SolarCenterService {
         readyTimeout: 30000,
       });
 
-      console.log(`✅ SFTP connection successful for ${monitorId}`);
+      console.log(`SFTP connection successful for ${monitorId}`);
       await this.sftp.end();
 
       return { success: true, message: 'Connection successful' };
     } catch (error: any) {
-      console.error(`❌ SFTP connection failed: ${error.message}`);
+      console.error(`SFTP connection failed: ${error.message}`);
       return { success: false, message: `Connection failed: ${error.message}` };
     }
   }
@@ -97,14 +123,14 @@ export class SolarCenterService {
     const content = `${lines}\n${dataLines}\n`;
 
     fs.writeFileSync(filepath, content, 'utf-8');
-    console.log(`✅ Generated SID file: ${filename}`);
+    console.log(`Generated SID file: ${filename}`);
 
     return filepath;
   }
 
   async sendFileToStanford(filePath: string, monitorId: string): Promise<{ success: boolean; message: string }> {
     try {
-      console.log(`📤 Connecting to Stanford SFTP...`);
+      console.log(`Connecting to Stanford SFTP...`);
 
       await this.sftp.connect({
         host: this.FTP_SERVER,
@@ -114,20 +140,23 @@ export class SolarCenterService {
         readyTimeout: 30000,
       });
 
-      console.log(`📁 Changing to directory: ${this.FTP_DIRECTORY}`);
-      await this.sftp.cwd(this.FTP_DIRECTORY);
+      console.log(`Changing to directory: ${this.FTP_DIRECTORY}`);
+      const dir: string = this.FTP_DIRECTORY || '/';
+      if (this.FTP_DIRECTORY) {
+        console.log(`Will upload to: ${this.FTP_DIRECTORY}`);
+      }
 
       const fileName = path.basename(filePath);
-      console.log(`📤 Uploading file: ${fileName}`);
+      console.log(`Uploading file: ${fileName}`);
 
       await this.sftp.put(filePath, fileName);
 
       await this.sftp.end();
-      console.log(`✅ File uploaded successfully: ${fileName}`);
+      console.log(`File uploaded successfully: ${fileName}`);
 
       return { success: true, message: `File uploaded: ${fileName}` };
     } catch (error: any) {
-      console.error(`❌ Upload failed: ${error.message}`);
+      console.error(`Upload failed: ${error.message}`);
       return { success: false, message: `Upload failed: ${error.message}` };
     }
   }
@@ -161,7 +190,7 @@ export class SolarCenterService {
     date: string
   ): Promise<{ success: boolean; message: string }> {
     try {
-      console.log(`📊 Preparing daily data for ${date}...`);
+      console.log(`Preparing daily data for ${date}...`);
 
       const signals = await this.getLatestSignals(stationId);
 

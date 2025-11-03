@@ -82,8 +82,9 @@ SuperSID Pro Analytics is a comprehensive platform for detecting and analyzing V
 | Node.js | ≥18.0.0 | JavaScript runtime |
 | npm | ≥9.0.0 | Package manager |
 | Git | ≥2.30.0 | Version control |
-| SQLite3 | ≥3.30 | Database |
-| Python | ≥3.8 (optional) | Data analysis |
+| Docker | ≥20.10 (optional) | Containerization |
+
+**Note**: SQLite3 is included as an npm dependency (`sqlite3` package).
 
 ---
 
@@ -181,41 +182,30 @@ npm start
 SuperSID_Project/
 ├── src/
 │   ├── backend/
+│   │   ├── database/
+│   │   │   ├── index.ts           # Database initialization
+│   │   │   └── db.ts              # Table definitions
 │   │   ├── server.ts              # Express server
 │   │   ├── services/
-│   │   │   ├── space-weather.service.ts
-│   │   │   ├── supersid.service.ts
-│   │   │   └── correlation.service.ts
-│   │   └── routes/
-│   │       └── api.routes.ts
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   └── __tests__/
 │   │
 │   ├── renderer/
 │   │   ├── index.tsx              # React entry point
 │   │   ├── pages/
-│   │   │   ├── Dashboard.tsx
-│   │   │   ├── SpaceWeather.tsx
-│   │   │   ├── VLFSignals.tsx
-│   │   │   ├── Correlation.tsx
-│   │   │   └── Analysis.tsx
 │   │   ├── components/
-│   │   │   ├── Layout.tsx
-│   │   │   ├── Sidebar.tsx
-│   │   │   ├── Header.tsx
-│   │   │   ├── SpaceWeatherChart.tsx
-│   │   │   └── VLFSignalsChart.tsx
 │   │   ├── services/
-│   │   │   └── analysis.service.ts
 │   │   └── styles/
-│   │       ├── layout.css
-│   │       ├── pages.css
-│   │       └── dashboard.css
 │   │
 │   └── setupTests.ts
 │
-├── jest.config.cjs                # Jest configuration
-├── tsconfig.json                  # TypeScript config
-├── webpack.config.cjs             # Webpack bundler
-├── package.json
+├── dist/                          # Built files (generated)
+├── data/                          # Local database
+├── public/                        # Static assets
+├── tsconfig.json                  # Base TypeScript config
+├── tsconfig.backend.json          # Backend-specific TypeScript config
+├── Dockerfile
 └── README.md
 ```
 
@@ -236,7 +226,6 @@ npm run build:renderer     # Frontend only
 npm test                   # Run all tests
 npm run test:watch        # Watch mode
 npm run test:coverage     # Coverage report
-npm run test:ci           # CI mode
 
 # Code Quality
 npm run lint              # Run ESLint
@@ -362,6 +351,13 @@ Outputs to `dist/` directory.
 ```bash
 npm run build
 NODE_ENV=production npm start
+```
+
+### Docker Build
+
+```bash
+docker build -t supersid-pro:latest .
+docker run -p 3000:3000 -p 3001:3001 supersid-pro
 ```
 
 ### Electron Desktop App

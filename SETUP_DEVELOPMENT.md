@@ -1,294 +1,598 @@
-# SuperSID Pro Analytics - Development Setup Guide
+# 🚀 SuperSID Pro Analytics - Development Setup Guide
 
-## 📋 Prerequisites
+**Complete guide for setting up the development environment**
 
-- **Node.js**: v18 o superior
-- **npm**: v9 o superior
-- **Git**: para clonar el repositorio
-- **SQLite3**: para base de datos local
+**Last Updated**: 2025-11-03
+**Version**: 1.0.0
+**Author**: Alejandro Arévalo
 
-## 📦 Installation
+---
 
-### 1. Clone the repository
+## 📋 Table of Contents
+
+- [System Requirements](#system-requirements)
+- [Installation Steps](#installation-steps)
+- [Project Structure](#project-structure)
+- [Development Commands](#development-commands)
+- [API Endpoints](#api-endpoints)
+- [Database Setup](#database-setup)
+- [Testing](#testing)
+- [Debugging](#debugging)
+- [Troubleshooting](#troubleshooting)
+- [Git Workflow](#git-workflow)
+
+---
+
+## 💻 System Requirements
+
+### Minimum Requirements
+
+- **OS**: macOS 10.15+, Ubuntu 18.04+, Windows 10+
+- **CPU**: 2+ cores
+- **RAM**: 4GB minimum
+- **Storage**: 2GB free space
+- **Internet**: Required for external APIs
+
+### Required Software
+
+| Software | Version | Installation |
+|----------|---------|--------------|
+| Node.js | ≥18.0.0 | https://nodejs.org |
+| npm | ≥9.0.0 | Included with Node.js |
+| Git | ≥2.30.0 | https://git-scm.com |
+| sqlite3 (npm) | ≥3.x | npm install sqlite3 |
+| Docker | ≥20.10 (optional) | https://www.docker.com |
+
+### Verify Installation
 
 ```bash
-git clone <repository-url>
+node --version        # Should be v18.x or higher
+npm --version         # Should be 9.x or higher
+git --version         # Should be 2.30+
+sqlite3 --version     # Should be 3.30+
+```
+
+---
+
+## ⚙️ Installation Steps
+
+### Step 1: Clone Repository
+
+```bash
+git clone https://github.com/yourusername/SuperSID_Project.git
 cd SuperSID_Project
 ```
 
-### 2. Install dependencies
+### Step 2: Install Node Modules
 
 ```bash
-# Frontend + Backend dependencies
 npm install
-
-# Development dependencies
-npm install --save-dev \
-  ts-jest \
-  jest \
-  @testing-library/react \
-  @testing-library/jest-dom \
-  @testing-library/user-event \
-  @types/jest \
-  typescript \
-  ts-node
 ```
 
-### 3. Install peer dependencies
+**What gets installed:**
+
+- **Frontend**: React 18, Recharts, Axios
+- **Backend**: Express, SQLite3, Socket.io
+- **Dev Tools**: Jest, TypeScript, Webpack, ESLint
+- **Total**: ~600MB
+
+**Installation time**: 2-5 minutes
+
+### Step 3: Create Environment File
 
 ```bash
-npm install recharts axios
+cp .env.example .env.development
 ```
 
-## 🏗️ Project Structure
-
-```
-SuperSID_Project/
-├── src/
-│   ├── backend/
-│   │   ├── server.ts          # Express server
-│   │   ├── services/          # Business logic
-│   │   │   ├── space-weather.service.ts
-│   │   │   ├── supersid.service.ts
-│   │   │   └── correlation.service.ts
-│   │   └── routes/            # API endpoints
-│   ├── renderer/
-│   │   ├── pages/             # React pages
-│   │   ├── components/        # Reusable components
-│   │   ├── services/          # API client
-│   │   └── styles/            # CSS files
-│   └── setupTests.ts
-├── jest.config.js
-├── tsconfig.json
-└── package.json
-```
-
-## 🔧 Configuration Files
-
-### tsconfig.json
-- Main TypeScript configuration
-- Supports ES2020 target
-- Module resolution for both backend and renderer
-
-### jest.config.js
-- Test runner configuration
-- Uses ts-jest for TypeScript support
-- JSDOM environment for React components
-
-### webpack.config.cjs
-- Renderer bundling configuration
-- Dev server on port 3000
-
-## 🚀 Development Commands
-
-### Start development server
-
-```bash
-npm run dev
-```
-
-This runs:
-- Backend on http://localhost:3001
-- Frontend on http://localhost:3000
-
-### Backend only
-
-```bash
-npm run dev:backend
-```
-
-### Frontend only
-
-```bash
-npm run dev:renderer
-```
-
-### Run tests
-
-```bash
-# Run all tests once
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests in CI mode
-npm run test:ci
-```
-
-### Build for production
-
-```bash
-npm run build:backend
-npm run build:renderer
-```
-
-## 📡 API Endpoints
-
-### Space Weather
-
-- `GET /api/analysis/space-weather` - Current solar activity
-- `GET /api/analysis/space-weather/forecast` - 27-day forecast
-
-### VLF Signals
-
-- `GET /api/analysis/vlf/:observatoryId` - VLF data
-- `GET /api/analysis/vlf/:observatoryId/anomalies` - Signal anomalies
-
-### Correlation
-
-- `POST /api/analysis/correlate/:observatoryId` - Correlate data
-- `GET /api/analysis/dashboard/:observatoryId` - Dashboard data
-
-## 🗄️ Database
-
-### SQLite Setup
-
-Database file: `./data/supersid.db`
-
-Tables created automatically:
-- `observatories` - Observatory configuration
-- `stations` - VLF stations
-- `signals` - Raw signal data
-- `solar_center_uploads` - Solar Center submissions
-
-### Manual database reset
-
-```bash
-rm -rf ./data/supersid.db
-npm run dev:backend
-```
-
-## 📝 Environment Variables
-
-Create `.env` file in project root:
+**Edit `.env.development`:**
 
 ```env
 NODE_ENV=development
 BACKEND_PORT=3001
 FRONTEND_PORT=3000
 DATABASE_PATH=./data/supersid.db
-API_TIMEOUT=5000
+CORS_ORIGIN=http://localhost:3000
+LOG_LEVEL=debug
 ```
+
+### Step 4: Initialize Database
+
+```bash
+npm run dev:backend
+```
+
+Wait for message: `✅ Server running on port 3001`
+
+Press `Ctrl+C` to stop.
+
+The database initializes automatically.
+
+### Step 5: Verify Setup
+
+```bash
+# Check database
+sqlite3 ./data/supersid.db ".tables"
+
+# Should output tables: observatories, signals, etc.
+```
+
+---
+
+## 📁 Project Structure
+
+```
+SuperSID_Project/
+├── src/
+│   ├── backend/
+│   │   ├── server.ts                 # Express server entry
+│   │   ├── services/
+│   │   │   ├── space-weather.service.ts
+│   │   │   ├── supersid.service.ts
+│   │   │   └── correlation.service.ts
+│   │   └── routes/
+│   │       └── api.routes.ts
+│   │
+│   ├── renderer/
+│   │   ├── index.tsx                 # React entry point
+│   │   ├── App.tsx                   # Main component
+│   │   ├── pages/
+│   │   │   ├── Dashboard.tsx         # Main dashboard
+│   │   │   ├── SpaceWeather.tsx      # Solar activity
+│   │   │   ├── VLFSignals.tsx        # Signal detection
+│   │   │   ├── Correlation.tsx       # Correlation analysis
+│   │   │   └── Analysis.tsx          # Advanced analysis
+│   │   ├── components/
+│   │   │   ├── Layout.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── SpaceWeatherChart.tsx
+│   │   │   ├── VLFSignalsChart.tsx
+│   │   │   └── CorrelationChart.tsx
+│   │   ├── services/
+│   │   │   └── analysis.service.ts   # API client
+│   │   └── styles/
+│   │       ├── layout.css
+│   │       ├── pages.css
+│   │       └── dashboard.css
+│   │
+│   ├── setupTests.ts                 # Jest setup
+│   │
+│   └── __tests__/                    # Test files
+│
+├── dist/                             # Built files (generated)
+│   ├── backend/
+│   └── renderer/
+│
+├── data/                             # Local database
+│   └── supersid.db
+│
+├── logs/                             # Log files
+│
+├── public/                           # Static assets
+│
+├── Configuration Files
+│   ├── .env.example
+│   ├── .env.development
+│   ├── .env.production
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── jest.config.cjs
+│   ├── webpack.config.cjs
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── nginx.conf
+│
+├── Documentation
+│   ├── README.md
+│   ├── SETUP_DEVELOPMENT.md          # This file
+│   ├── DEPLOYMENT_GUIDE.md
+│   └── API_DOCUMENTATION.md
+│
+└── git files
+    ├── .git/
+    ├── .gitignore
+    └── .github/workflows/
+```
+
+---
+
+## 🛠️ Development Commands
+
+### Start Development Server
+
+```bash
+# Both frontend + backend
+npm run dev
+```
+
+**Output:**
+```
+Frontend: http://localhost:3000
+Backend API: http://localhost:3001
+```
+
+### Start Individual Services
+
+```bash
+# Backend only
+npm run dev:backend
+
+# Frontend only
+npm run dev:renderer
+```
+
+### Build for Production
+
+```bash
+# Build both
+npm run build
+
+# Backend only
+npm run build:backend
+
+# Frontend only
+npm run build:renderer
+```
+
+### Run Tests
+
+```bash
+# All tests
+npm test
+
+# Watch mode (re-run on changes)
+npm run test:watch
+
+# With coverage report
+npm run test:coverage
+
+# Specific test file
+npm test -- SpaceWeatherChart.test.tsx
+
+# Specific test pattern
+npm test -- --testNamePattern="renders chart"
+```
+
+### Code Quality
+
+```bash
+# Run ESLint
+npm run lint
+
+# Check TypeScript
+npm run type-check
+
+# Format code with Prettier
+npm run format
+```
+
+### Database Commands
+
+```bash
+# Open SQLite CLI
+sqlite3 ./data/supersid.db
+
+# List tables
+.tables
+
+# Describe table
+.schema observatories
+
+# Export data
+.mode csv
+.output data.csv
+SELECT * FROM signals;
+.output stdout
+
+# Reset database
+rm ./data/supersid.db
+npm run dev:backend  # Reinitialize
+```
+
+---
+
+## 📡 API Endpoints
+
+### Testing Endpoints
+
+Use curl or Postman:
+
+```bash
+# Current Solar Activity
+curl http://localhost:3001/api/analysis/space-weather
+
+# Solar Forecast
+curl http://localhost:3001/api/analysis/space-weather/forecast
+
+# VLF Data
+curl http://localhost:3001/api/analysis/vlf/999
+
+# Correlate Data
+curl -X POST http://localhost:3001/api/analysis/correlate/999
+
+# Dashboard Data
+curl http://localhost:3001/api/analysis/dashboard/999
+```
+
+### Full API Documentation
+
+See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for complete endpoint reference.
+
+---
+
+## 🗄️ Database Setup
+
+### SQLite Database
+
+Located at: `./data/supersid.db`
+
+### Tables
+
+1. **observatories**
+   - Observatory/station configuration
+   - Location, coordinates, parameters
+
+2. **stations**
+   - VLF receiving stations
+   - Frequency, antenna specifications
+
+3. **signals**
+   - Raw VLF signal data
+   - Timestamp, amplitude, frequency, quality
+
+4. **solar_center_uploads**
+   - Submission tracking for Solar Center
+   - Status, timestamp, data
+
+### Database Initialization
+
+Runs automatically on first backend startup:
+
+```bash
+npm run dev:backend
+```
+
+### Manual Reset
+
+```bash
+# Delete database
+rm ./data/supersid.db
+
+# Reinitialize
+npm run dev:backend
+
+# Check tables created
+sqlite3 ./data/supersid.db ".tables"
+```
+
+---
 
 ## 🧪 Testing
 
-### Test Files Location
+### Test Structure
 
-- Services: `src/renderer/services/__tests__/`
-- Components: `src/renderer/components/__tests__/`
-
-### Running Specific Tests
-
-```bash
-# Test specific file
-npm test -- analysis.service.test.ts
-
-# Test specific pattern
-npm test -- --testNamePattern="getCurrentSolarActivity"
-
-# Test with coverage for specific file
-npm test -- --coverage --collectCoverageFrom="src/renderer/services/analysis.service.ts"
+```
+src/
+├── renderer/
+│   └── __tests__/
+│       ├── services/
+│       │   └── analysis.service.test.ts
+│       └── components/
+│           ├── SpaceWeatherChart.test.tsx
+│           └── VLFSignalsChart.test.tsx
+│
+└── setupTests.ts
 ```
 
-### Coverage Reports
+### Writing Tests
+
+#### Service Test Template
+
+```typescript
+import { analysisService } from '../analysis.service';
+
+describe('AnalysisService', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should fetch data', async () => {
+    const mockData = { /* ... */ };
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      json: async () => ({ success: true, data: mockData }),
+    });
+
+    const result = await analysisService.getCurrentSolarActivity();
+    
+    expect(result).toEqual(mockData);
+    expect(global.fetch).toHaveBeenCalled();
+  });
+});
+```
+
+#### Component Test Template
+
+```typescript
+import { render, screen } from '@testing-library/react';
+import MyComponent from '../MyComponent';
+
+describe('MyComponent', () => {
+  it('renders title', () => {
+    render(<MyComponent title="Test" />);
+    expect(screen.getByText('Test')).toBeInTheDocument();
+  });
+});
+```
+
+### Run Tests with Coverage
 
 ```bash
 npm run test:coverage
 open coverage/lcov-report/index.html
 ```
 
-## 🐛 Troubleshooting
+---
 
-### Backend connection refused
+## 🐛 Debugging
 
-- Ensure port 3001 is available
-- Check if backend is running: `npm run dev:backend`
+### Browser DevTools
 
-### Tests failing with module errors
+1. Start dev server: `npm run dev`
+2. Open browser: http://localhost:3000
+3. Press `F12` to open DevTools
+4. Go to Console/Sources/Network tabs
+
+### Backend Debugging
+
+```bash
+# Run with verbose logging
+DEBUG=supersid-pro:* npm run dev:backend
+```
+
+### VS Code Debugging
+
+Create `.vscode/launch.json`:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Backend",
+      "program": "${workspaceFolder}/src/backend/server.ts",
+      "runtimeArgs": ["--loader", "ts-node/esm"],
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}
+```
+
+### Common Debug Scenarios
+
+**Frontend not loading:**
+```bash
+# Check webpack dev server
+curl http://localhost:3000
+
+# Check browser console
+# Press F12 → Console tab
+```
+
+**Backend errors:**
+```bash
+# Check logs
+npm run dev:backend 2>&1 | tee backend.log
+
+# Check database
+sqlite3 ./data/supersid.db ".tables"
+```
+
+**API not responding:**
+```bash
+# Test endpoint
+curl -v http://localhost:3001/api/analysis/space-weather
+
+# Check network in DevTools
+# Press F12 → Network tab
+```
+
+---
+
+## 🆘 Troubleshooting
+
+### Port Already in Use
+
+```bash
+# Find process on port
+lsof -i :3000
+lsof -i :3001
+
+# Kill process
+kill -9 <PID>
+
+# Or use fuser
+fuser -k 3000/tcp
+fuser -k 3001/tcp
+```
+
+### Module Not Found
 
 ```bash
 # Clear cache and reinstall
 rm -rf node_modules package-lock.json
 npm install
-npm test
 ```
 
-### Database errors
+### TypeScript Errors
 
 ```bash
-# Reset database
-rm -rf ./data/supersid.db
+# Check all types
+npm run type-check
 
-# Reinitialize
+# Watch mode
+npm run type-check -- --watch
+```
+
+### Tests Failing
+
+```bash
+# Clear Jest cache
+npm test -- --clearCache
+
+# Run with verbose output
+npm test -- --verbose
+
+# Debug specific test
+node --inspect-brk node_modules/.bin/jest --runInBand
+```
+
+### Database Locked Error
+
+```bash
+# Close any open connections
+pkill sqlite3
+
+# Or reset database
+rm ./data/supersid.db
 npm run dev:backend
 ```
 
-### Port 3000 or 3001 already in use
+### npm ERR! code EACCES
 
 ```bash
-# Kill process on port
-lsof -ti:3000 | xargs kill -9  # Frontend
-lsof -ti:3001 | xargs kill -9  # Backend
+# Fix permissions
+sudo chown -R $(whoami) ~/.npm
+
+# Or use nvm (recommended)
+curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 ```
 
-## 📚 Dependencies
+---
 
-### Core Dependencies
+## 📚 Git Workflow
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| react | ^18.2.0 | UI framework |
-| axios | ^1.6.0 | HTTP client |
-| recharts | ^2.10.0 | Chart library |
-| express | ^4.18.0 | Backend framework |
-| sqlite3 | ^5.1.0 | Database |
+### Create Feature Branch
 
-### Development Dependencies
+```bash
+git checkout -b feature/amazing-feature
+```
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| typescript | ^5.3.0 | Type checking |
-| ts-jest | ^29.1.0 | Jest + TypeScript |
-| jest | ^29.7.0 | Test framework |
-| @testing-library/react | ^14.0.0 | React testing |
-| webpack | ^5.89.0 | Bundler |
+### Commit Changes
 
-## 🔒 Security Best Practices
+```bash
+# Stage changes
+git add .
 
-- Never commit `.env` files with sensitive data
-- Use environment variables for API keys
-- Validate all user inputs
-- Keep dependencies updated: `npm audit`
+# Commit with message
+git commit -m "feat: add amazing feature"
 
-## 📖 Additional Resources
+# Push to remote
+git push origin feature/amazing-feature
+```
 
-- [React Documentation](https://react.dev)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs)
-- [Jest Documentation](https://jestjs.io)
-- [Express.js Guide](https://expressjs.com)
-
-## 🤝 Contributing
-
-1. Create a feature branch: `git checkout -b feature/name`
-2. Make changes and test: `npm test`
-3. Commit with clear messages: `git commit -m "feat: add feature"`
-4. Push to branch: `git push origin feature/name`
-5. Open a Pull Request
-
-## 📝 Development Notes
-
-### Code Style
-
-- Use TypeScript for type safety
-- Follow ESLint configuration
-- Use camelCase for variables/functions
-- Use PascalCase for React components
-
-### Git Commits
+### Commit Message Format
 
 ```
 feat: Add new feature
@@ -296,28 +600,82 @@ fix: Fix bug
 docs: Update documentation
 style: Format code
 refactor: Refactor code
-test: Add tests
-chore: Maintenance
+test: Add or update tests
+chore: Update dependencies
+ci: CI/CD changes
 ```
 
-## 🚢 Deployment
+### Create Pull Request
 
-### Production Build
+1. Go to GitHub
+2. Click "New Pull Request"
+3. Select your branch
+4. Fill in description
+5. Request reviewers
 
-```bash
-npm run build:backend
-npm run build:renderer
-npm start
-```
-
-### Docker (Optional)
+### Before Merging
 
 ```bash
-docker build -t supersid-pro .
-docker run -p 3000:3000 -p 3001:3001 supersid-pro
+# Run all checks
+npm test
+npm run type-check
+npm run lint
+npm run format
+npm run build
+
+# All should pass ✅
 ```
 
 ---
 
-**Last Updated**: 2025-11-03
-**Version**: 1.0.0
+## 📖 Quick Reference
+
+### Most Common Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Start dev server |
+| `npm test` | Run tests |
+| `npm run build` | Build for production |
+| `npm run type-check` | Check TypeScript |
+| `npm run lint` | Run linter |
+| `npm run format` | Format code |
+
+### File Locations
+
+| File | Purpose |
+|------|---------|
+| `src/backend/server.ts` | Backend entry |
+| `src/renderer/index.tsx` | Frontend entry |
+| `.env.development` | Dev config |
+| `./data/supersid.db` | Local database |
+| `./logs/` | Application logs |
+
+### API Base URLs
+
+| Environment | URL |
+|-------------|-----|
+| Development | `http://localhost:3001/api` |
+| Production | `https://api.supersid-pro.com/api` |
+
+---
+
+## 📞 Getting Help
+
+1. Check [README.md](./README.md) for overview
+2. See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for deployment
+3. Read [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for endpoints
+4. Search GitHub issues
+5. Contact: support@supersid-pro.com
+
+---
+
+## 🎉 You're Ready!
+
+```bash
+npm run dev
+```
+
+Then open: http://localhost:3000
+
+**Happy coding!** 🚀

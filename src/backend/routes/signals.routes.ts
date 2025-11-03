@@ -1,5 +1,5 @@
 import express from 'express';
-import { recordSignal, getSignals, getSignalStats } from '../controllers/signals.controller.ts';
+import { recordSignal, getSignals, getSignalStats } from '../controllers/signals.controller';
 
 const router = express.Router();
 

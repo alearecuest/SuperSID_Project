@@ -9,11 +9,11 @@
   "homepage": "./",
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:renderer\"",
-    "dev:backend": "ts-node --esm --project tsconfig.backend.json src/backend/server.ts",
+    "dev:backend": "ts-node --esm --project tsconfig.backend.json --transpileOnly src/backend/server.ts",
     "dev:renderer": "webpack serve --mode development --config webpack.config.cjs",
     "build": "npm run build:backend && npm run build:renderer",
-    "build:backend": "tsc --project tsconfig.json",
-    "build:renderer": "webpack --mode production --config webpack.config.js",
+    "build:backend": "tsc --project tsconfig.backend.json --skipLibCheck",
+    "build:renderer": "webpack --mode production --config webpack.config.cjs",
     "start": "electron .",
     "electron": "electron .",
     "electron-dev": "concurrently \"npm run build\" \"electron .\"",
@@ -28,6 +28,7 @@
     "test:ci": "jest --ci --coverage --maxWorkers=2"
   },
   "dependencies": {
+    "@types/sqlite3": "^3.1.11",
     "axios": "^1.6.0",
     "chart.js": "^4.4.0",
     "date-fns": "^2.30.0",
@@ -40,7 +41,7 @@
     "recharts": "^2.15.4",
     "socket.io": "^4.7.0",
     "socket.io-client": "^4.7.0",
-    "sqlite3": "^5.1.6",
+    "sqlite3": "^5.1.7",
     "ssh2-sftp-client": "^12.0.1",
     "three": "^0.154.0",
     "zustand": "^4.4.0"

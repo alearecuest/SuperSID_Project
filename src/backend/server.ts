@@ -1,14 +1,14 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { db } from './db/database.ts';
-import observatoryRoutes from './routes/observatory.routes.ts';
-import stationsRoutes from './routes/stations.routes.ts';
-import signalsRoutes from './routes/signals.routes.ts';
-import { solarCenterService } from './services/solar-center.service.ts';
-import { spaceWeatherService } from './services/space-weather.service.ts';
-import { superSIDService } from './services/supersid.service.ts';
-import { correlationService } from './services/correlation.service.ts';
+import { database } from './database/index';
+import observatoryRoutes from './routes/observatory.routes';
+import stationsRoutes from './routes/stations.routes';
+import signalsRoutes from './routes/signals.routes';
+import { solarCenterService } from './services/solar-center.service';
+import { spaceWeatherService } from './services/space-weather.service';
+import { superSIDService } from './services/supersid.service';
+import { correlationService } from './services/correlation.service';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

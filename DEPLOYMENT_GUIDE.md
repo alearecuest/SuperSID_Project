@@ -1,491 +1,517 @@
 # 🚀 SuperSID Pro Analytics - Deployment Guide
 
-**Complete guide for deploying SuperSID Pro to production environments**
+**Complete guide for deploying to production environments**
+
+**Last Updated**: 2025-11-03 21:24:27 UTC
+**Version**: 1.0.0
+
+---
 
 ## 📋 Table of Contents
 
+- [Overview](#overview)
 - [Pre-Deployment Checklist](#pre-deployment-checklist)
-- [Deployment Options](#deployment-options)
-- [Heroku Deployment](#heroku-deployment)
+- [Environment Setup](#environment-setup)
 - [Docker Deployment](#docker-deployment)
+- [Heroku Deployment](#heroku-deployment)
 - [AWS Deployment](#aws-deployment)
-- [DigitalOcean Deployment](#digitalocean-deployment)
-- [Electron Desktop App](#electron-desktop-app)
 - [Production Configuration](#production-configuration)
-- [Monitoring & Maintenance](#monitoring--maintenance)
+- [Monitoring & Logging](#monitoring--logging)
+- [Database Migration](#database-migration)
 - [Rollback Procedures](#rollback-procedures)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## 🌟 Overview
+
+SuperSID Pro Analytics can be deployed to multiple platforms:
+
+| Platform | Best For | Ease | Cost |
+|----------|----------|------|------|
+| Docker | Self-hosted | ⭐⭐⭐⭐ | 💰 |
+| Heroku | Rapid deployment | ⭐⭐⭐⭐⭐ | 💰💰 |
+| AWS | Enterprise scale | ⭐⭐⭐ | 💰💰💰 |
+| DigitalOcean | VPS hosting | ⭐⭐⭐⭐ | 💰 |
+| DigitalOcean App Platform | Containerized | ⭐⭐⭐⭐ | 💰💰 |
 
 ---
 
 ## ✅ Pre-Deployment Checklist
 
-Before deploying to production, verify:
+Before deploying, verify:
 
-- [ ] All tests passing: `npm test`
+### Code Quality
+- [ ] All tests pass: `npm test`
 - [ ] No TypeScript errors: `npm run type-check`
 - [ ] Linting passes: `npm run lint`
-- [ ] Build succeeds: `npm run build`
-- [ ] Environment variables configured
-- [ ] Database migrations applied
-- [ ] SSL certificates ready (if HTTPS)
-- [ ] Backup strategy in place
-- [ ] Monitoring tools configured
-- [ ] Documentation updated
+- [ ] Code formatted: `npm run format`
+
+### Build Verification
+- [ ] Backend builds: `npm run build:backend`
+- [ ] Frontend builds: `npm run build:renderer`
+- [ ] Docker builds: `docker build -t supersid-pro:latest .`
+- [ ] No console errors
+
+### Configuration
+- [ ] `.env.production` configured
+- [ ] Database backup created
+- [ ] API keys secured
+- [ ] CORS origins set correctly
+
+### Documentation
+- [ ] README.md updated
+- [ ] CHANGELOG.md updated
+- [ ] API docs current
+- [ ] Deployment notes added
+
+### Testing
+- [ ] Manual testing completed
+- [ ] All endpoints tested
+- [ ] Database operations verified
+- [ ] Error handling tested
 
 ---
 
-## 🎯 Deployment Options
+## 🔧 Environment Setup
 
-| Option | Cost | Complexity | Scalability | Best For |
-|--------|------|-----------|------------|----------|
-| **Heroku** | $7-50/mo | ⭐ Low | Medium | Quick deployment |
-| **Docker + VPS** | $5-20/mo | ⭐⭐ Medium | High | Full control |
-| **AWS** | $10-100+/mo | ⭐⭐⭐ High | Very High | Enterprise |
-| **DigitalOcean** | $5-40/mo | ⭐⭐ Medium | High | Developer-friendly |
-| **Electron Desktop** | Free | ⭐⭐ Medium | N/A | Desktop app |
+### Production Environment Variables
 
----
+Create `.env.production`:
 
-## 🟣 Heroku Deployment
+```env
+# Environment
+NODE_ENV=production
+LOG_LEVEL=info
 
-### Step 1: Install Heroku CLI
+# Server Configuration
+BACKEND_PORT=3001
+FRONTEND_PORT=3000
+
+# Database
+DATABASE_PATH=/data/supersid.db
+
+# API Configuration
+API_TIMEOUT=10000
+CORS_ORIGIN=https://yourdomain.com
+CORS_METHODS=GET,POST,PUT,DELETE
+CORS_CREDENTIALS=true
+
+# External APIs
+SPACE_WEATHER_API=https://api.spaceweatherlive.com/v1
+SOLAR_CENTER_API=https://sid-ftp.stanford.edu
+
+# Monitoring
+SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
+LOG_FILE=/logs/supersid.log
+
+# Security
+JWT_SECRET=your-super-secret-jwt-key-min-32-chars
+API_KEY_HEADER=X-API-Key
+
+# Performance
+NODE_ENV_PRODUCTION=true
+CLUSTER_ENABLED=true
+MAX_WORKERS=4
+```
+
+### Security Best Practices
 
 ```bash
-# macOS
-brew tap heroku/brew && brew install heroku
+# 1. Generate secure secret
+openssl rand -base64 32
 
-# Linux
-curl https://cli-assets.heroku.com/install.sh | sh
+# 2. Store in environment variables, NOT in files
+export JWT_SECRET="generated-secret"
 
-# Windows
-# Download from https://devcenter.heroku.com/articles/heroku-cli
-```
+# 3. Use secrets manager for production
+# AWS Secrets Manager, Heroku Config Vars, etc.
 
-### Step 2: Create Heroku App
+# 4. Encrypt sensitive data
+# Database passwords, API keys, tokens
 
-```bash
-heroku login
-heroku create supersid-pro-analytics
-```
-
-### Step 3: Set Environment Variables
-
-```bash
-heroku config:set NODE_ENV=production
-heroku config:set DATABASE_PATH=/app/data/supersid.db
-heroku config:set BACKEND_PORT=3001
-heroku config:set CORS_ORIGIN=https://supersid-pro-analytics.herokuapp.com
-```
-
-### Step 4: Configure Procfile
-
-Create `Procfile`:
-
-```
-web: npm run build && npm start
-```
-
-### Step 5: Deploy
-
-```bash
-git push heroku main
-```
-
-### Step 6: View Logs
-
-```bash
-heroku logs --tail
-```
-
-### Heroku Limitations
-
-⚠️ **Important:**
-- Database resets on dyno restart (use Heroku Postgres addon)
-- Limited to 512MB RAM on free tier
-- Sleeps after 30 mins of inactivity on free tier
-
-### Add Heroku Postgres
-
-```bash
-heroku addons:create heroku-postgresql:hobby-dev
-heroku config
+# 5. Enable HTTPS only
+# Set CORS_ORIGIN to https:// only
 ```
 
 ---
 
 ## 🐳 Docker Deployment
 
-### Step 1: Create Dockerfile
-
-Already created! Check `Dockerfile`
-
-### Step 2: Build Docker Image
+### Build Production Image
 
 ```bash
-docker build -t supersid-pro:latest .
+# Build with tag
+docker build -t supersid-pro:v1.0.0 .
+
+# Tag as latest
+docker tag supersid-pro:v1.0.0 supersid-pro:latest
+
+# Push to registry (optional)
+docker push your-registry/supersid-pro:v1.0.0
 ```
 
-### Step 3: Run Container Locally
+### Run Container
 
 ```bash
-docker run -p 3000:3000 -p 3001:3001 \
+# Basic run
+docker run -d \
+  -p 3000:3000 \
+  -p 3001:3001 \
+  --name supersid-pro \
+  supersid-pro:latest
+
+# With environment variables
+docker run -d \
+  -p 3000:3000 \
+  -p 3001:3001 \
   -e NODE_ENV=production \
-  -e DATABASE_PATH=/app/data/supersid.db \
+  -e DATABASE_PATH=/data/supersid.db \
+  -e CORS_ORIGIN=https://yourdomain.com \
+  --volume /data/supersid.db:/app/data/supersid.db \
+  --volume /logs:/app/logs \
+  --name supersid-pro \
+  supersid-pro:latest
+
+# With resource limits
+docker run -d \
+  -p 3000:3000 \
+  -p 3001:3001 \
+  --memory=2g \
+  --cpus=2 \
+  --restart unless-stopped \
+  --name supersid-pro \
   supersid-pro:latest
 ```
 
-### Step 4: Push to Docker Hub
+### Docker Compose
 
-```bash
-# Login to Docker Hub
-docker login
-
-# Tag image
-docker tag supersid-pro:latest yourusername/supersid-pro:latest
-
-# Push
-docker push yourusername/supersid-pro:latest
-```
-
-### Step 5: Deploy to VPS
-
-```bash
-# SSH into VPS
-ssh user@your-vps-ip
-
-# Pull image
-docker pull yourusername/supersid-pro:latest
-
-# Run with docker-compose
-docker-compose up -d
-```
-
-### Docker Compose (docker-compose.yml)
+Create `docker-compose.production.yml`:
 
 ```yaml
 version: '3.8'
 
 services:
   app:
-    image: yourusername/supersid-pro:latest
+    image: supersid-pro:latest
+    container_name: supersid-pro
     ports:
       - "3000:3000"
       - "3001:3001"
     environment:
       NODE_ENV: production
-      DATABASE_PATH: /app/data/supersid.db
-      BACKEND_PORT: 3001
-      CORS_ORIGIN: https://your-domain.com
+      DATABASE_PATH: /data/supersid.db
+      CORS_ORIGIN: https://yourdomain.com
+      LOG_LEVEL: info
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
-    restart: always
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
+    networks:
+      - supersid-network
 
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./ssl:/etc/nginx/ssl
-    depends_on:
-      - app
-    restart: always
+networks:
+  supersid-network:
+    driver: bridge
+```
 
-volumes:
-  data:
-  logs:
+Run:
+
+```bash
+docker-compose -f docker-compose.production.yml up -d
+```
+
+### Container Orchestration (Kubernetes)
+
+Create `k8s-deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: supersid-pro
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: supersid-pro
+  template:
+    metadata:
+      labels:
+        app: supersid-pro
+    spec:
+      containers:
+      - name: supersid-pro
+        image: your-registry/supersid-pro:v1.0.0
+        ports:
+        - containerPort: 3000
+        - containerPort: 3001
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DATABASE_PATH
+          value: "/data/supersid.db"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+```
+
+Deploy:
+
+```bash
+kubectl apply -f k8s-deployment.yaml
+```
+
+---
+
+## 📦 Heroku Deployment
+
+### Prerequisites
+
+```bash
+# Install Heroku CLI
+brew tap heroku/brew && brew install heroku
+
+# Login
+heroku login
 ```
 
 ### Deploy
 
 ```bash
-docker-compose up -d
+# 1. Create app
+heroku create supersid-pro
+
+# 2. Set environment variables
+heroku config:set NODE_ENV=production
+heroku config:set DATABASE_PATH=/app/data/supersid.db
+heroku config:set CORS_ORIGIN=https://supersid-pro.herokuapp.com
+
+# 3. Deploy
+git push heroku main
+
+# 4. View logs
+heroku logs --tail
+
+# 5. Monitor
+heroku ps
+heroku status
 ```
 
-### View Logs
+### Procfile
+
+Create `Procfile`:
+
+```
+web: npm start
+```
+
+### Buildpacks
 
 ```bash
-docker-compose logs -f app
+# Set Node.js buildpack
+heroku buildpacks:add heroku/nodejs
+
+# View buildpacks
+heroku buildpacks
+```
+
+### Database on Heroku
+
+```bash
+# Use file-based SQLite (persisted)
+heroku config:set DATABASE_PATH=/app/data/supersid.db
+
+# Or use Heroku Postgres
+heroku addons:create heroku-postgresql:standard-0
+```
+
+### Scaling
+
+```bash
+# Scale dynos
+heroku ps:scale web=2
+
+# Check dyno status
+heroku ps
+
+# View costs
+heroku billing
 ```
 
 ---
 
 ## ☁️ AWS Deployment
 
-### Option A: Elastic Beanstalk (Easiest)
-
-#### Step 1: Install EB CLI
+### Option 1: EC2 Instance
 
 ```bash
-pip install awsebcli --upgrade --user
-```
+# 1. Launch EC2 instance (Ubuntu 20.04)
+# 2. SSH into instance
+ssh -i key.pem ubuntu@instance-ip
 
-#### Step 2: Initialize
-
-```bash
-eb init -p node.js-18 supersid-pro --region us-east-1
-```
-
-#### Step 3: Create Environment
-
-```bash
-eb create supersid-prod
-```
-
-#### Step 4: Deploy
-
-```bash
-eb deploy
-```
-
-#### Step 5: Monitor
-
-```bash
-eb status
-eb logs
-```
-
-### Option B: EC2 + RDS
-
-#### Step 1: Launch EC2 Instance
-
-- AMI: Ubuntu 22.04 LTS
-- Instance Type: t3.medium (recommended)
-- Storage: 20GB gp3
-- Security Group: Allow 80, 443, 3001
-
-#### Step 2: SSH and Setup
-
-```bash
-ssh -i your-key.pem ubuntu@your-instance-ip
-
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install Node.js
+# 3. Install Node.js
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
-# Install PM2
-sudo npm install -g pm2
-
-# Clone repository
-git clone https://github.com/yourusername/SuperSID_Project.git
+# 4. Clone repository
+git clone https://github.com/alearecuest/SuperSID_Project.git
 cd SuperSID_Project
+
+# 5. Install dependencies
 npm install
+
+# 6. Build
 npm run build
-```
 
-#### Step 3: Start with PM2
+# 7. Set environment variables
+export NODE_ENV=production
+export DATABASE_PATH=/data/supersid.db
 
-```bash
+# 8. Start with PM2
+npm install -g pm2
 pm2 start npm --name "supersid-pro" -- start
 pm2 save
 pm2 startup
-```
 
-#### Step 4: Setup Nginx Reverse Proxy
-
-```bash
-sudo apt install nginx -y
-sudo nano /etc/nginx/sites-available/default
-```
-
-Add:
-
-```nginx
-upstream supersid {
-    server localhost:3001;
-}
-
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    location / {
-        proxy_pass http://supersid;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-```bash
+# 9. Setup Nginx reverse proxy
+# See nginx.conf in project
+sudo cp nginx.conf /etc/nginx/sites-available/supersid-pro
+sudo ln -s /etc/nginx/sites-available/supersid-pro /etc/nginx/sites-enabled/
+sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-#### Step 5: SSL Certificate (Let's Encrypt)
+### Option 2: ECS (Elastic Container Service)
 
 ```bash
-sudo apt install certbot python3-certbot-nginx -y
-sudo certbot --nginx -d your-domain.com
+# 1. Push image to ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+
+docker tag supersid-pro:latest YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/supersid-pro:latest
+docker push YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/supersid-pro:latest
+
+# 2. Create ECS task definition
+# Use ecs-task-definition.json
+
+# 3. Create ECS service
+aws ecs create-service \
+  --cluster supersid-cluster \
+  --service-name supersid-pro \
+  --task-definition supersid-pro:1 \
+  --desired-count 2 \
+  --load-balancers targetGroupArn=arn:aws:...,containerName=supersid-pro,containerPort=3001
+
+# 4. Monitor
+aws ecs describe-services --cluster supersid-cluster --services supersid-pro
 ```
 
----
-
-## 💧 DigitalOcean Deployment
-
-### Step 1: Create Droplet
-
-- OS: Ubuntu 22.04
-- Plan: $5-10/mo
-- Region: Choose closest to you
-
-### Step 2: SSH Setup
+### Option 3: App Runner
 
 ```bash
-ssh root@your-droplet-ip
+# 1. Push to ECR (same as above)
 
-# Create non-root user
-adduser appuser
-usermod -aG sudo appuser
-su - appuser
-```
+# 2. Create App Runner service
+aws apprunner create-service \
+  --service-name supersid-pro \
+  --source-configuration ImageRepository='{RepositoryUrl=YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/supersid-pro,ImageIdentifier=latest,ImageRepositoryType=ECR}'
 
-### Step 3: Install Dependencies
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs nginx git curl
-
-sudo npm install -g pm2
-```
-
-### Step 4: Clone and Setup
-
-```bash
-git clone https://github.com/yourusername/SuperSID_Project.git
-cd SuperSID_Project
-npm install
-npm run build
-```
-
-### Step 5: Deploy with PM2
-
-```bash
-pm2 start npm --name "supersid" -- start
-pm2 save
-pm2 startup
-```
-
-### Step 6: Add Domain
-
-1. Go to DigitalOcean Control Panel
-2. Add domain
-3. Create A record pointing to Droplet IP
-
-### Step 7: SSL with Let's Encrypt
-
-```bash
-sudo certbot certonly --standalone -d your-domain.com
-```
-
----
-
-## 📦 Electron Desktop App
-
-### Build for All Platforms
-
-```bash
-npm run dist
-```
-
-Creates installers in `dist/`:
-
-```
-dist/
-├── SuperSID Pro-1.0.0.exe          # Windows
-├── SuperSID Pro-1.0.0.dmg          # macOS
-├── SuperSID Pro-1.0.0.AppImage     # Linux
-└── SuperSID Pro-1.0.0.tar.gz       # Linux tar
-```
-
-### Build for Specific Platform
-
-```bash
-# Windows only
-npm run dist -- --win
-
-# macOS only
-npm run dist -- --mac
-
-# Linux only
-npm run dist -- --linux
-```
-
-### Notarize macOS App
-
-```bash
-# Required for distribution
-export APPLE_ID=your-email@example.com
-export APPLE_PASSWORD=your-app-password
-export APPLE_TEAM_ID=XXXXXXXXXX
-
-npm run dist -- --mac --publish=never
-```
-
-### Code Signing (Windows)
-
-Set in `package.json`:
-
-```json
-"build": {
-  "win": {
-    "certificateFile": "path/to/certificate.pfx",
-    "certificatePassword": "password",
-    "signingHashAlgorithms": ["sha256"],
-    "sign": "./customSign.js"
-  }
-}
+# 3. Monitor
+aws apprunner list-services
 ```
 
 ---
 
 ## ⚙️ Production Configuration
 
-### Environment Variables
+### Nginx Reverse Proxy
 
-Create `.env.production`:
+Create `nginx.conf`:
 
-```env
-# Server
-NODE_ENV=production
-BACKEND_PORT=3001
-FRONTEND_PORT=3000
+```nginx
+upstream backend {
+  server localhost:3001;
+}
 
-# Database
-DATABASE_PATH=/var/data/supersid/supersid.db
-DATABASE_BACKUP=/var/backups/supersid/
+upstream frontend {
+  server localhost:3000;
+}
 
-# Security
-CORS_ORIGIN=https://your-domain.com
-API_RATE_LIMIT=100
-SESSION_SECRET=your-secret-key-here
+server {
+  listen 80;
+  server_name yourdomain.com www.yourdomain.com;
 
-# Logging
-LOG_LEVEL=info
-LOG_FILE=/var/log/supersid/app.log
+  # Redirect HTTP to HTTPS
+  return 301 https://$server_name$request_uri;
+}
 
-# External APIs
-SPACE_WEATHER_API=https://api.spaceweatherlive.com/v1
-SPACE_WEATHER_API_KEY=your-api-key
+server {
+  listen 443 ssl http2;
+  server_name yourdomain.com www.yourdomain.com;
 
-# Monitoring
-SENTRY_DSN=https://your-sentry-dsn
-DATADOG_API_KEY=your-datadog-key
+  # SSL certificates
+  ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+
+  # Security headers
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header X-Frame-Options "DENY" always;
+  add_header X-XSS-Protection "1; mode=block" always;
+
+  # Gzip compression
+  gzip on;
+  gzip_types text/plain text/css application/json application/javascript;
+  gzip_min_length 1000;
+
+  # Frontend
+  location / {
+    proxy_pass http://frontend;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # Backend API
+  location /api {
+    proxy_pass http://backend;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    
+    # CORS headers
+    add_header 'Access-Control-Allow-Origin' '*' always;
+    add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+    add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
+  }
+
+  # Static files
+  location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+    expires 30d;
+    add_header Cache-Control "public, immutable";
+  }
+}
 ```
 
-### PM2 Ecosystem File
+### PM2 Configuration
 
 Create `ecosystem.config.js`:
 
@@ -499,264 +525,219 @@ module.exports = {
       exec_mode: 'cluster',
       env: {
         NODE_ENV: 'production',
+        DATABASE_PATH: '/data/supersid.db',
+        CORS_ORIGIN: 'https://yourdomain.com'
       },
-      error_file: './logs/err.log',
-      out_file: './logs/out.log',
-      log_file: './logs/combined.log',
-      time_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      autorestart: true,
-      watch: false,
-      ignore_watch: ['node_modules', 'logs', 'data'],
+      error_file: '/logs/supersid-error.log',
+      out_file: '/logs/supersid-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      restart_delay: 4000,
       max_memory_restart: '1G',
-      max_restarts: 10,
-      min_uptime: '10s',
-    },
-  ],
-  deploy: {
-    production: {
-      user: 'appuser',
-      host: 'your-server-ip',
-      ref: 'origin/main',
-      repo: 'git@github.com:yourusername/SuperSID_Project.git',
-      path: '/var/www/supersid-pro',
-      'post-deploy': 'npm install && npm run build && pm2 restart ecosystem.config.js --env production',
-    },
-  },
+      merge_logs: true
+    }
+  ]
 };
 ```
 
 ---
 
-## 📊 Monitoring & Maintenance
+## 📊 Monitoring & Logging
 
-### Health Check Endpoint
+### Application Monitoring
 
-Add to `server.ts`:
+```bash
+# Install monitoring packages
+npm install --save-dev @sentry/node @sentry/tracing
+npm install pm2-logrotate
+
+# Enable log rotation
+pm2 install pm2-logrotate
+
+# Monitor with PM2
+pm2 monit
+
+# Check status
+pm2 status
+pm2 logs supersid-pro
+```
+
+### Health Checks
+
+Add to `src/backend/server.ts`:
 
 ```typescript
 app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
+  res.status(200).json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),
+    database: 'connected'
   });
 });
 ```
 
-### Logging Setup
+### Log Aggregation
 
 ```bash
-# Create log directory
-mkdir -p logs
-chmod 755 logs
+# Using ELK Stack or similar
+# Logs should go to:
+# - /logs/supersid.log
+# - /logs/supersid-error.log
 
-# Rotate logs with logrotate
-sudo nano /etc/logrotate.d/supersid-pro
+# Rotate logs daily
+# Use pm2-logrotate or logrotate
+
+# Monitor with:
+tail -f /logs/supersid.log
 ```
 
-Add:
+---
 
-```
-/var/log/supersid/*.log {
-  daily
-  rotate 14
-  compress
-  delaycompress
-  notifempty
-  create 0640 appuser appuser
-  sharedscripts
-  postrotate
-    pm2 reload ecosystem.config.js > /dev/null 2>&1 || true
-  endscript
-}
-```
+## 🗄️ Database Migration
 
-### Backup Strategy
+### Backup Before Deployment
 
 ```bash
-#!/bin/bash
-# backup.sh
+# Backup current database
+cp ./data/supersid.db ./backups/supersid.db.backup
 
-BACKUP_DIR="/var/backups/supersid"
-DB_FILE="/var/data/supersid/supersid.db"
-DATE=$(date +%Y%m%d_%H%M%S)
-
-mkdir -p $BACKUP_DIR
-
-# Backup database
-cp $DB_FILE $BACKUP_DIR/supersid_$DATE.db
-gzip $BACKUP_DIR/supersid_$DATE.db
-
-# Keep last 30 days
-find $BACKUP_DIR -name "*.gz" -mtime +30 -delete
-
-echo "Backup completed: $BACKUP_DIR/supersid_$DATE.db.gz"
+# Export SQL
+sqlite3 ./data/supersid.db ".dump" > ./backups/supersid.sql
 ```
 
-Schedule with cron:
+### Production Database Setup
 
 ```bash
-crontab -e
-# Add: 0 2 * * * /usr/local/bin/backup.sh
-```
+# 1. Initialize empty database
+rm /data/supersid.db
 
-### Monitoring with Datadog
+# 2. Let app initialize on first run
+npm start
 
-```bash
-# Install Datadog agent
-DD_AGENT_MAJOR_VERSION=7 DD_API_KEY=your-key DD_SITE=datadoghq.com bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_agent.sh)"
-```
+# 3. Verify tables created
+sqlite3 /data/supersid.db ".tables"
 
-### Monitoring with Sentry
-
-```bash
-npm install --save @sentry/node @sentry/tracing
-```
-
-In `server.ts`:
-
-```typescript
-import * as Sentry from "@sentry/node";
-
-Sentry.init({ dsn: process.env.SENTRY_DSN });
-app.use(Sentry.Handlers.requestHandler());
-app.use(Sentry.Handlers.errorHandler());
+# 4. Restore backup if needed
+sqlite3 /data/supersid.db < ./backups/supersid.sql
 ```
 
 ---
 
 ## 🔄 Rollback Procedures
 
-### Rollback from Git
+### Docker Rollback
 
 ```bash
-# Revert to previous commit
-git revert HEAD
-git push production main
+# 1. Stop current container
+docker stop supersid-pro
 
-# Or reset to specific commit
-git reset --hard abc1234
-git push -f production main
+# 2. Remove it
+docker rm supersid-pro
+
+# 3. Run previous version
+docker run -d \
+  -p 3000:3000 \
+  -p 3001:3001 \
+  --name supersid-pro \
+  supersid-pro:v0.9.0
+
+# 4. Verify
+docker logs supersid-pro
 ```
 
-### Rollback with PM2
+### Heroku Rollback
 
 ```bash
-# Save current version
-pm2 save
+# 1. View releases
+heroku releases
 
-# Rollback database
-mv /var/backups/supersid/supersid_backup.db /var/data/supersid/supersid.db
+# 2. Rollback to previous
+heroku rollback v123
 
-# Restart
-pm2 restart all
+# 3. Verify
+heroku logs --tail
 ```
 
-### Rollback Docker Image
+### Database Rollback
 
 ```bash
-# Switch to previous image
-docker tag yourusername/supersid-pro:previous yourusername/supersid-pro:latest
-docker-compose up -d
+# 1. Stop application
+pm2 stop supersid-pro
+
+# 2. Restore backup
+cp ./backups/supersid.db.backup ./data/supersid.db
+
+# 3. Restart
+pm2 start supersid-pro
 ```
 
 ---
 
-## 🆘 Troubleshooting Deployment
+## 🐛 Troubleshooting
 
-### App Won't Start
+### Application Won't Start
 
 ```bash
+# Check Node version
+node --version  # Should be ≥18.0.0
+
+# Check port conflicts
+lsof -i :3001
+lsof -i :3000
+
+# Check environment variables
+env | grep DATABASE_PATH
+
 # Check logs
 pm2 logs supersid-pro
+docker logs supersid-pro
+```
 
-# Check port
-lsof -i :3001
+### Database Connection Issues
+
+```bash
+# Check database path
+ls -la /data/supersid.db
 
 # Check permissions
-ls -la /var/data/supersid/
+chmod 644 /data/supersid.db
+
+# Test connection
+sqlite3 /data/supersid.db ".tables"
 ```
 
-### Database Connection Failed
+### Memory Issues
 
 ```bash
-# Check database file
-ls -la /var/data/supersid/supersid.db
+# Monitor memory
+free -h
+top
 
-# Check SQLite
-sqlite3 /var/data/supersid/supersid.db ".tables"
+# Increase limits
+docker run --memory=4g ...
+pm2 set max_memory_restart 2G
 
-# Reset database
-rm /var/data/supersid/supersid.db
-npm run dev:backend
+# Enable clustering
+# See ecosystem.config.js
 ```
 
-### SSL Certificate Issues
+### CORS Issues
 
 ```bash
-# Renew certificate
-sudo certbot renew
+# Verify CORS_ORIGIN set
+echo $CORS_ORIGIN
 
-# Check expiration
-sudo certbot certificates
-
-# Force renewal
-sudo certbot renew --force-renewal
-```
-
-### Out of Disk Space
-
-```bash
-# Check disk usage
-df -h
-
-# Clear logs
-rm -rf /var/log/supersid/*
-
-# Clear old backups
-find /var/backups/supersid -mtime +30 -delete
-```
-
----
-
-## ✅ Post-Deployment
-
-### Verification Steps
-
-1. ✅ Test health endpoint: `curl https://your-domain.com/health`
-2. ✅ Access dashboard: `https://your-domain.com`
-3. ✅ Check logs: `pm2 logs supersid-pro`
-4. ✅ Monitor performance: Check Datadog/Sentry
-5. ✅ Test API: `curl https://your-domain.com/api/analysis/space-weather`
-
-### Performance Optimization
-
-```bash
-# Enable compression
-# nginx.conf
-gzip on;
-gzip_types text/plain application/json;
-gzip_min_length 1024;
-
-# Cache static files
-location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-    expires 365d;
-    add_header Cache-Control "public, immutable";
-}
+# Should match frontend domain
+# Update in .env.production
 ```
 
 ---
 
 ## 📞 Support
 
-For deployment issues:
-- Check logs: `pm2 logs`
-- Monitor: Check Datadog/Sentry dashboards
-- Contact: support@supersid-pro.com
+For development setup, see [SETUP_DEVELOPMENT.md](./SETUP_DEVELOPMENT.md).
+For architecture details, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
----
-
-**Last Updated**: 2025-11-03
-**Version**: 1.0.0
+**Last Updated**: 2025-11-03 21:24:27 UTC
+**Maintained by**: @alearecuest
