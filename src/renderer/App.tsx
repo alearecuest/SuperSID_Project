@@ -7,9 +7,12 @@ import Analysis from './pages/Analysis';
 import Settings from './pages/Settings';
 import ObservatorySetup from './pages/ObservatorySetup';
 import SelectVLFStations from './pages/SelectVLFStations';
+import SpaceWeather from './pages/SpaceWeather';
+import VLFSignals from './pages/VLFSignals';
+import Correlation from './pages/Correlation';
 import { configService } from './services/config.service';
 
-type PageType = 'setup' | 'stations' | 'dashboard' | 'visualization' | 'analysis' | 'settings' | 'observatory-config';
+type PageType = 'setup' | 'stations' | 'dashboard' | 'visualization' | 'analysis' | 'settings' | 'observatory-config' | 'space-weather' | 'vlf-signals' | 'correlation';
 
 interface AppState {
   currentPage: PageType;
@@ -172,6 +175,12 @@ const App: React.FC = () => {
         return <DataVisualization stationId={appState.observatoryId} />;
       case 'analysis':
         return <Analysis stationId={appState.observatoryId} />;
+      case 'space-weather':
+        return <SpaceWeather />;
+      case 'vlf-signals':
+        return <VLFSignals observatoryId={appState.observatoryId} />;
+      case 'correlation':
+        return <Correlation observatoryId={appState.observatoryId} />;
       case 'settings':
         return <Settings />;
       default:
