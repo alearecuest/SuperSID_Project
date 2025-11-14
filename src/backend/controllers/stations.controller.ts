@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { runAsync, getAsync, allAsync } from '../db/database';
+import { runAsync, getAsync, allAsync } from '../db/database.js';
 
 export const subscribeToStation = async (req: Request, res: Response) => {
   try {

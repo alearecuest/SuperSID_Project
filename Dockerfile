@@ -15,6 +15,9 @@ RUN npm ci
 # Copy source
 COPY src/backend ./src/backend
 
+# Copy init.sql for database initialization
+COPY src/backend/db/init.sql ./src/backend/db/
+
 # Build backend
 RUN npm run build:backend
 

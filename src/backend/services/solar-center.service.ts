@@ -2,7 +2,7 @@ import Client from 'ssh2-sftp-client';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { database } from '../database/index';
+import { database } from '../database/index.js';
 
 function runAsync(sql: string, params: any[] = []): Promise<any> {
   return new Promise((resolve, reject) => {

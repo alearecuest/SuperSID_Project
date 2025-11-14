@@ -14,7 +14,7 @@
     "build": "npm run build:backend && npm run build:renderer",
     "build:backend": "tsc --project tsconfig.backend.json --skipLibCheck",
     "build:renderer": "webpack --mode production --config webpack.config.cjs",
-    "start": "electron .",
+    "start": "node dist/backend/server.js",
     "electron": "electron .",
     "electron-dev": "concurrently \"npm run build\" \"electron .\"",
     "pack": "electron-builder --dir",
