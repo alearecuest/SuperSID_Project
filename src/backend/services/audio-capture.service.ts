@@ -9,7 +9,7 @@ let recorder: any = null;
 try {
   recorder = require('node-record-lpcm16');
 } catch (err) {
-  console.warn('⚠️  node-record-lpcm16 not available, running in simulation mode');
+  console.warn('node-record-lpcm16 not available, running in simulation mode');
 }
 
 export interface AudioConfig {
@@ -54,18 +54,18 @@ class AudioCaptureService extends EventEmitter {
       ...config,
     };
 
-    console.log('🎤 AudioCaptureService initialized:', this.config);
-    console.log('🔊 Real audio mode:', recorder ? 'ENABLED' : 'DISABLED (simulation)');
+    console.log('AudioCaptureService initialized:', this.config);
+    console.log('Real audio mode:', recorder ? 'ENABLED' : 'DISABLED (simulation)');
   }
 
   async startCapture(): Promise<void> {
     if (this.isCapturing) {
-      console.warn('⚠️  Audio capture already in progress');
+      console.warn('Audio capture already in progress');
       return;
     }
 
     try {
-      console.log('▶️  Starting audio capture...');
+      console.log('Starting audio capture...');
       
       if (recorder) {
         await this.initializeRealAudioDevice();
@@ -76,20 +76,20 @@ class AudioCaptureService extends EventEmitter {
       this.isCapturing = true;
       this.emit('captureStarted', { config: this.config });
       
-      console.log('✅ Audio capture started successfully');
+      console.log('Audio capture started successfully');
     } catch (error) {
-      console.error('❌ Failed to start audio capture:', error);
+      console.error('Failed to start audio capture:', error);
       throw new Error(`Audio capture failed: ${error}`);
     }
   }
 
   stopCapture(): void {
     if (!this.isCapturing) {
-      console.warn('⚠️  Audio capture not in progress');
+      console.warn('Audio capture not in progress');
       return;
     }
 
-    console.log('⏹️  Stopping audio capture...');
+    console.log('Stopping audio capture...');
     
     if (this.recordingStream) {
       try {
@@ -108,7 +108,7 @@ class AudioCaptureService extends EventEmitter {
     this.isCapturing = false;
     this.emit('captureStopped');
     
-    console.log('✅ Audio capture stopped');
+    console.log('Audio capture stopped');
   }
 
   isCaptureActive(): boolean {
@@ -125,11 +125,11 @@ class AudioCaptureService extends EventEmitter {
     }
 
     this.config = { ...this.config, ...newConfig };
-    console.log('⚙️  Audio config updated:', this.config);
+    console.log('Audio config updated:', this.config);
   }
 
   async listAudioDevices(): Promise<AudioDeviceInfo[]> {
-    console.log('📋 Listing audio devices...');
+    console.log('Listing audio devices...');
     
     return [
       {
@@ -156,7 +156,7 @@ class AudioCaptureService extends EventEmitter {
 
   clearBuffer(): void {
     this.audioBuffer = [];
-    console.log('🗑️  Audio buffer cleared');
+    console.log('Audio buffer cleared');
   }
 
   // ========== PRIVATE METHODS ==========
@@ -195,14 +195,14 @@ class AudioCaptureService extends EventEmitter {
       });
 
       this.recordingStream.on('error', (error: Error) => {
-        console.error('🔴 Audio recording error:', error);
+        console.error('Audio recording error:', error);
         this.emit('error', error);
       });
 
-      console.log('✅ Real audio device initialized with sox/arecord');
+      console.log('Real audio device initialized with sox/arecord');
     } catch (error) {
-      console.error('❌ Failed to initialize real audio:', error);
-      console.warn('⚠️  Falling back to simulation mode');
+      console.error('Failed to initialize real audio:', error);
+      console.warn('Falling back to simulation mode');
       await this.initializeSimulatedAudio();
     }
   }
@@ -254,7 +254,6 @@ class AudioCaptureService extends EventEmitter {
     const leftChannel = new Float32Array(bufferSize);
     const rightChannel = new Float32Array(bufferSize);
     
-    // Simulate multiple VLF stations with realistic characteristics
     const stations = [
       { freq: 24000, amp: 0.4, name: 'NAA' },     // USA
       { freq: 19800, amp: 0.35, name: 'NWC' },    // Australia
@@ -269,18 +268,14 @@ class AudioCaptureService extends EventEmitter {
       const t = i / sampleRate;
       let signal = 0;
       
-      // Add all VLF station signals
       stations.forEach(station => {
-        // Add phase drift and amplitude variation
         const phaseDrift = Math.sin(t * 0.1) * 0.1;
         const ampVariation = 1 + Math.sin(t * 0.05) * 0.1;
         signal += station.amp * ampVariation * Math.sin(2 * Math.PI * station.freq * t + phaseDrift);
       });
       
-      // Add realistic noise
       const noise = (Math.random() - 0.5) * noiseLevel;
       
-      // Occasionally add SID event (sudden ionospheric disturbance)
       const sidEvent = Math.random() < sidProbability ? Math.random() * 0.5 : 0;
       
       leftChannel[i] = signal / stations.length + noise + sidEvent;

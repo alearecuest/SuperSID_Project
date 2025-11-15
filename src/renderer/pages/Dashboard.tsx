@@ -14,7 +14,6 @@ import {
 } from 'chart.js';
 import '../styles/pages.css';
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -37,7 +36,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
 
   useEffect(() => {
     loadDashboardData();
-    const interval = setInterval(loadDashboardData, 5000); // Update every 30 seconds
+    const interval = setInterval(loadDashboardData, 5000);
     return () => clearInterval(interval);
   }, [stationId]);
 
@@ -45,12 +44,12 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
     try {
       setIsLoading(true);
       setError(null);
-      console.log(`📊 Loading dashboard data for observatory ${stationId}...`);
+      console.log(`Loading dashboard data for observatory ${stationId}...`);
       
       const data = await analysisService.getDashboard(stationId);
       setDashboardData(data);
       
-      console.log(`✅ Dashboard data loaded: ${data.vlsData.signals.length} signals`);
+      console.log(`Dashboard data loaded: ${data.vlsData.signals.length} signals`);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
       setError('Failed to load dashboard data. Please try again.');
@@ -59,13 +58,12 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
     }
   };
 
-  // Prepare chart data
   const getChartData = () => {
     if (!dashboardData || !dashboardData.vlsData.signals.length) {
       return null;
     }
 
-    const signals = dashboardData.vlsData.signals.slice(-100); // Last 100 points
+    const signals = dashboardData.vlsData.signals.slice(-100);
 
     return {
       labels: signals.map(s => {
@@ -130,7 +128,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
     return (
       <div className="page-container">
         <div className="error-state">
-          <h3>⚠️ Error</h3>
+          <h3>Error</h3>
           <p>{error}</p>
           <button className="btn-primary" onClick={loadDashboardData}>
             Retry
@@ -168,7 +166,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
       {/* Stats Grid */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">📡</div>
+          <div className="stat-icon"></div>
           <div className="stat-content">
             <div className="stat-label">Total Signals</div>
             <div className="stat-value">{dashboardData.vlsData.signals.length.toLocaleString()}</div>
@@ -176,7 +174,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">📊</div>
+          <div className="stat-icon"></div>
           <div className="stat-content">
             <div className="stat-label">Avg Amplitude</div>
             <div className="stat-value">{dashboardData.vlsData.averageAmplitude.toFixed(2)} dB</div>
@@ -192,7 +190,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">🌞</div>
+          <div className="stat-icon"></div>
           <div className="stat-content">
             <div className="stat-label">Solar Activity</div>
             <div className="stat-value">{dashboardData.solarActivity.xrayClass} Class</div>
@@ -207,7 +205,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
           <div className="section-header">
             <h2>VLF Signal Timeline</h2>
             <button className="btn-secondary" onClick={loadDashboardData}>
-              🔄 Refresh
+              Refresh
             </button>
           </div>
           <div className="chart-container" style={{ height: '400px', padding: '20px' }}>
@@ -219,7 +217,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
       {/* Space Weather Info */}
       <div className="section-card">
         <div className="section-header">
-          <h2>☀️ Space Weather Conditions</h2>
+          <h2>Space Weather Conditions</h2>
         </div>
         <div className="space-weather-grid">
           <div className="weather-item">
@@ -302,16 +300,16 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
       {/* Quick Actions */}
       <div className="quick-actions">
         <button className="btn-primary" onClick={loadDashboardData}>
-          <span>🔄</span> Refresh Data
+          <span></span> Refresh Data
         </button>
         <button className="btn-secondary">
-          <span>📥</span> Export Data
+          <span></span> Export Data
         </button>
         <button className="btn-secondary">
-          <span>📊</span> View Reports
+          <span></span> View Reports
         </button>
         <button className="btn-secondary">
-          <span>⚙️</span> Settings
+          <span></span> Settings
         </button>
       </div>
     </div>

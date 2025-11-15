@@ -134,7 +134,7 @@ class VLFMonitorService extends EventEmitter {
     }
 
     this.config = { ...this.config, ...newConfig };
-    console.log('🔧 Monitor config updated:', this.config);
+    console.log('Monitor config updated:', this.config);
   }
 
   getLatestData(count: number = 60): ProcessedSignal[] {
@@ -170,7 +170,7 @@ class VLFMonitorService extends EventEmitter {
    */
   clearReadings(): void {
     this.readings = [];
-    console.log('🗑️  All VLF readings cleared');
+    console.log('All VLF readings cleared');
   }
 
   async getHistoricalData(

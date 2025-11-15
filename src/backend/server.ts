@@ -55,7 +55,7 @@ app.use('/api/signals', signalsRoutes);
 // Simulation endpoints (only for development/demo)
 if (process.env.NODE_ENV !== 'production') {
   app.use('/api/simulation', simulationRoutes);
-  console.log('⚠️  Simulation API enabled (development mode)');
+  console.log('Simulation API enabled (development mode)');
 }
 
 // ========== ANALYSIS API - SPACE WEATHER + VLF ==========
@@ -72,7 +72,7 @@ app.get('/api/analysis/space-weather', async (req, res) => {
 
 app.get('/api/analysis/space-weather/forecast', async (req, res) => {
   try {
-    const forecast = await spaceWeatherService.getForecast();
+    const forecast = await spaceWeatherService.getSolarForecast();
     res.json({ success: true, data: forecast });
   } catch (error) {
     console.error('Error:', error);
@@ -107,7 +107,12 @@ app.post('/api/analysis/correlate/:observatoryId', async (req, res) => {
     const observatoryId = parseInt(req.params.observatoryId);
     const solarActivity = await spaceWeatherService.getCurrentSolarActivity();
     const vlsData = superSIDService.getData(observatoryId);
-    const analysis = correlationService.correlateData(solarActivity, vlsData);
+    const analysis = correlationService.correlateData({
+      ...solarActivity,
+      protonFlux: solarActivity.protonFlux || 0,
+      electronFlux: solarActivity.electronFlux || 0,
+      source: solarActivity.source || 'NOAA SWPC',
+    }, vlsData);
     res.json({ success: true, data: analysis });
   } catch (error) {
     console.error('Error:', error);
@@ -115,8 +120,7 @@ app.post('/api/analysis/correlate/:observatoryId', async (req, res) => {
   }
 });
 
-// Dashboard consolidated data
-// Dashboard consolidated data
+
 app.get('/api/analysis/dashboard/:observatoryId', async (req, res) => {
   try {
     const observatoryId = parseInt(req.params.observatoryId);

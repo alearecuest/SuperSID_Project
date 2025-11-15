@@ -34,7 +34,6 @@ export class APIClient {
         data = await response.json();
       } else {
         const text = await response.text();
-        // Try to parse as JSON even if content-type is wrong
         try {
           data = JSON.parse(text);
         } catch {
@@ -186,12 +185,12 @@ export const endpoints = {
     timeseries: (stationId: number) => `/api/stations/${stationId}/analysis/timeseries`,
     anomalies: (stationId: number) => `/api/stations/${stationId}/analysis/anomalies`,
     correlation: () => '/api/analysis/correlation',
-    vlf: (observatoryId: number) => `/api/analysis/vlf/${observatoryId}`,           // ADD
-    spaceWeather: () => '/api/analysis/space-weather',                              // ADD
-    dashboard: (observatoryId: number) => `/api/analysis/dashboard/${observatoryId}`, // ADD
+    vlf: (observatoryId: number) => `/api/analysis/vlf/${observatoryId}`,
+    spaceWeather: () => '/api/analysis/space-weather',
+    dashboard: (observatoryId: number) => `/api/analysis/dashboard/${observatoryId}`,
   },
 
-  simulation: {                                                                     // ADD THIS
+  simulation: {
     generateData: (observatoryId: number) => `/api/simulation/generate-vlf-data/${observatoryId}`,
     status: () => '/api/simulation/status',
   },

@@ -113,15 +113,15 @@ export class ConfigService {
   }
 
   initialize(): AppConfig {
-    console.log('✅ ConfigService initialized');
-    console.log('📍 Observatory ID:', this.getObservatoryId());
-    console.log('🏛️ Observatory Name:', this.config.observatoryName);
+    console.log('ConfigService initialized');
+    console.log('Observatory ID:', this.getObservatoryId());
+    console.log('Observatory Name:', this.config.observatoryName);
     
     if (typeof localStorage !== 'undefined') {
       const stored = localStorage.getItem(CONFIG_KEY);
       if (!stored) {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(this.config));
-        console.log('💾 Initial config saved to localStorage');
+        console.log('Initial config saved to localStorage');
       }
     }
     

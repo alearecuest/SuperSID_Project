@@ -18,27 +18,27 @@ import type { AudioSample } from './audio-capture.service.js';
 
 export interface ProcessedSignal {
   timestamp: number;
-  frequency: number;          // Target frequency (e.g., 24000 Hz)
-  amplitude: number;          // Signal amplitude in dB
-  phase: number;              // Phase in radians
-  snr: number;                // Signal-to-Noise Ratio in dB
-  quality: number;            // Quality index (0-100)
-  rawAmplitude: number;       // Raw amplitude value
-  noiseFloor: number;         // Estimated noise floor
+  frequency: number;
+  amplitude: number;
+  phase: number;
+  snr: number;
+  quality: number;
+  rawAmplitude: number;
+  noiseFloor: number;
 }
 
 export interface FFTResult {
-  frequencies: Float32Array;  // Frequency bins
-  magnitudes: Float32Array;   // Magnitude for each bin
-  phases: Float32Array;       // Phase for each bin
+  frequencies: Float32Array;
+  magnitudes: Float32Array;
+  phases: Float32Array;
   sampleRate: number;
 }
 
 export interface FilterConfig {
-  centerFrequency: number;    // Default: 24000 Hz
-  bandwidth: number;          // Default: 2000 Hz (±1000 Hz)
-  minFrequency: number;       // Default: 20000 Hz
-  maxFrequency: number;       // Default: 26000 Hz
+  centerFrequency: number;
+  bandwidth: number;
+  minFrequency: number;
+  maxFrequency: number;
 }
 
 /**
@@ -49,7 +49,7 @@ export interface FilterConfig {
 class SignalProcessingService extends EventEmitter {
   private filterConfig: FilterConfig;
   private signalHistory: ProcessedSignal[] = [];
-  private maxHistorySize: number = 1440; // 24 hours at 1 sample/min
+  private maxHistorySize: number = 1440;
 
   constructor() {
     super();
@@ -71,22 +71,16 @@ class SignalProcessingService extends EventEmitter {
    * @returns Processed VLF signal information
    */
   processAudioSample(sample: AudioSample): ProcessedSignal {
-    // Use left channel for processing (mono VLF signal)
     const audioData = sample.leftChannel;
     
-    // 1. Apply FFT to get frequency domain
     const fftResult = this.computeFFT(audioData, sample.sampleRate);
     
-    // 2. Extract VLF band (20-26 kHz)
     const vlfSignal = this.extractVLFBand(fftResult);
     
-    // 3. Calculate signal metrics
     const processedSignal = this.calculateSignalMetrics(vlfSignal, sample.timestamp);
     
-    // 4. Store in history
     this.addToHistory(processedSignal);
     
-    // 5. Emit processed signal
     this.emit('signalProcessed', processedSignal);
     
     return processedSignal;
@@ -116,7 +110,7 @@ class SignalProcessingService extends EventEmitter {
    */
   clearHistory(): void {
     this.signalHistory = [];
-    console.log('🧹 Signal history cleared');
+    console.log('Signal history cleared');
   }
 
   /**
@@ -124,7 +118,7 @@ class SignalProcessingService extends EventEmitter {
    */
   updateFilterConfig(config: Partial<FilterConfig>): void {
     this.filterConfig = { ...this.filterConfig, ...config };
-    console.log('🔧 Filter config updated:', this.filterConfig);
+    console.log('Filter config updated:', this.filterConfig);
   }
 
   /**
@@ -186,13 +180,11 @@ class SignalProcessingService extends EventEmitter {
     const { frequencies, magnitudes, phases } = fftResult;
     const { minFrequency, maxFrequency, centerFrequency } = this.filterConfig;
 
-    // Find indices for VLF band
     let peakAmplitude = 0;
     let peakFrequency = centerFrequency;
     let peakPhase = 0;
     let peakIndex = 0;
 
-    // Find peak within VLF band
     for (let i = 0; i < frequencies.length; i++) {
       const freq = frequencies[i];
       
@@ -206,7 +198,6 @@ class SignalProcessingService extends EventEmitter {
       }
     }
 
-    // Calculate noise floor (average magnitude outside VLF band)
     let noiseSum = 0;
     let noiseCount = 0;
     
@@ -269,7 +260,6 @@ class SignalProcessingService extends EventEmitter {
   private addToHistory(signal: ProcessedSignal): void {
     this.signalHistory.push(signal);
     
-    // Keep only last N samples
     if (this.signalHistory.length > this.maxHistorySize) {
       this.signalHistory.shift();
     }
@@ -300,7 +290,6 @@ class SignalProcessingService extends EventEmitter {
   detectAnomalies(thresholdStdDev: number = 2): ProcessedSignal[] {
     if (this.signalHistory.length < 10) return [];
 
-    // Calculate mean and standard deviation
     const amplitudes = this.signalHistory.map(s => s.amplitude);
     const mean = amplitudes.reduce((sum, a) => sum + a, 0) / amplitudes.length;
     
@@ -311,12 +300,10 @@ class SignalProcessingService extends EventEmitter {
     
     const stdDev = Math.sqrt(variance);
 
-    // Find signals outside threshold
     return this.signalHistory.filter(
       s => Math.abs(s.amplitude - mean) > thresholdStdDev * stdDev
     );
   }
 }
 
-// Singleton instance
 export const signalProcessingService = new SignalProcessingService();
