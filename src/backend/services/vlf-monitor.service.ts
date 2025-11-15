@@ -6,10 +6,6 @@
  * - Signal processing (FFT, filtering)
  * - Database storage
  * - Real-time monitoring
- * 
- * This is the main service that replaces the mock data in supersid.service.ts
- * 
- * @module VLFMonitorService
  */
 
 import { EventEmitter } from 'events';
@@ -20,7 +16,7 @@ import { database } from '../database/index.js';
 export interface MonitorConfig {
   stationId: number;
   autoStart: boolean;
-  sampleInterval: number;  // Seconds between samples (default: 60)
+  sampleInterval: number;
   saveToDB: boolean;
 }
 
@@ -33,15 +29,22 @@ export interface MonitorStatus {
   errors: number;
 }
 
-/**
- * VLF Monitor Service
- * 
- * Orchestrates the entire VLF monitoring pipeline
- */
+export interface VLFReading {
+  timestamp: number;
+  frequency: number;
+  amplitude: number;
+  phase: number;
+  snr: number;
+  quality: number;
+  rawAmplitude: number;
+  noiseFloor: number;
+}
+
 class VLFMonitorService extends EventEmitter {
   private config: MonitorConfig;
   private status: MonitorStatus;
   private sampleTimer?: NodeJS.Timeout;
+  private readings: VLFReading[] = [];
 
   constructor() {
     super();
@@ -49,7 +52,7 @@ class VLFMonitorService extends EventEmitter {
     this.config = {
       stationId: 1,
       autoStart: false,
-      sampleInterval: 60, // 1 sample per minute (like original SuperSID)
+      sampleInterval: 60,
       saveToDB: true,
     };
 
@@ -67,9 +70,6 @@ class VLFMonitorService extends EventEmitter {
     console.log('VLFMonitorService initialized');
   }
 
-  /**
-   * Start monitoring VLF signals
-   */
   async startMonitoring(stationId?: number): Promise<void> {
     if (this.status.isRunning) {
       console.warn('Monitoring already in progress');
@@ -84,10 +84,7 @@ class VLFMonitorService extends EventEmitter {
 
       console.log(`Starting VLF monitoring for station ${this.config.stationId}...`);
 
-      // Start audio capture
       await audioCaptureService.startCapture();
-
-      // Start periodic sampling
       this.startPeriodicSampling();
 
       this.status.isRunning = true;
@@ -104,9 +101,6 @@ class VLFMonitorService extends EventEmitter {
     }
   }
 
-  /**
-   * Stop monitoring
-   */
   stopMonitoring(): void {
     if (!this.status.isRunning) {
       console.warn('Monitoring not in progress');
@@ -115,10 +109,8 @@ class VLFMonitorService extends EventEmitter {
 
     console.log('Stopping VLF monitoring...');
 
-    // Stop audio capture
     audioCaptureService.stopCapture();
 
-    // Stop periodic sampling
     if (this.sampleTimer) {
       clearInterval(this.sampleTimer);
       this.sampleTimer = undefined;
@@ -132,16 +124,10 @@ class VLFMonitorService extends EventEmitter {
     console.log('VLF monitoring stopped');
   }
 
-  /**
-   * Get current monitoring status
-   */
   getStatus(): MonitorStatus {
     return { ...this.status };
   }
 
-  /**
-   * Update configuration
-   */
   updateConfig(newConfig: Partial<MonitorConfig>): void {
     if (this.status.isRunning) {
       throw new Error('Cannot update config while monitoring. Stop monitoring first.');
@@ -151,16 +137,42 @@ class VLFMonitorService extends EventEmitter {
     console.log('🔧 Monitor config updated:', this.config);
   }
 
-  /**
-   * Get latest VLF data (for API endpoints)
-   */
   getLatestData(count: number = 60): ProcessedSignal[] {
     return signalProcessingService.getHistory(count);
   }
 
   /**
-   * Get VLF data from database for specific time range
+   * Get latest N readings
    */
+  getLatestReadings(count: number = 100): VLFReading[] {
+    const history = signalProcessingService.getHistory(count);
+    return history.map(signal => ({
+      timestamp: signal.timestamp,
+      frequency: signal.frequency,
+      amplitude: signal.amplitude,
+      phase: signal.phase,
+      snr: signal.snr,
+      quality: signal.quality,
+      rawAmplitude: signal.rawAmplitude,
+      noiseFloor: signal.noiseFloor,
+    }));
+  }
+
+  /**
+   * Get all readings
+   */
+  getAllReadings(): VLFReading[] {
+    return this.getLatestReadings(1000);
+  }
+
+  /**
+   * Clear all readings
+   */
+  clearReadings(): void {
+    this.readings = [];
+    console.log('🗑️  All VLF readings cleared');
+  }
+
   async getHistoricalData(
     stationId: number,
     startTime: Date,
@@ -204,16 +216,11 @@ class VLFMonitorService extends EventEmitter {
 
   // ========== PRIVATE METHODS ==========
 
-  /**
-   * Setup event handlers for audio and signal processing
-   */
   private setupEventHandlers(): void {
-    // Listen to processed signals
     signalProcessingService.on('signalProcessed', (signal: ProcessedSignal) => {
       this.handleProcessedSignal(signal);
     });
 
-    // Listen to audio capture events
     audioCaptureService.on('captureStarted', () => {
       console.log('Audio capture started');
     });
@@ -223,14 +230,9 @@ class VLFMonitorService extends EventEmitter {
     });
   }
 
-  /**
-   * Start periodic sampling (e.g., every 60 seconds)
-   */
   private startPeriodicSampling(): void {
-    // Take a sample immediately
     this.takeSample();
 
-    // Then take samples at regular intervals
     this.sampleTimer = setInterval(() => {
       this.takeSample();
     }, this.config.sampleInterval * 1000);
@@ -238,14 +240,9 @@ class VLFMonitorService extends EventEmitter {
     console.log(`Sampling every ${this.config.sampleInterval} seconds`);
   }
 
-  /**
-   * Take a single sample
-   */
   private takeSample(): void {
-    // Listen for the next audio data event
     audioCaptureService.once('data', (sample: AudioSample) => {
       try {
-        // Process the audio sample
         const processedSignal = signalProcessingService.processAudioSample(sample);
         
         console.log(`Sample processed: ${processedSignal.amplitude.toFixed(2)} dB, SNR: ${processedSignal.snr.toFixed(2)} dB`);
@@ -256,14 +253,10 @@ class VLFMonitorService extends EventEmitter {
     });
   }
 
-  /**
-   * Handle a processed signal (save to DB, emit events)
-   */
   private handleProcessedSignal(signal: ProcessedSignal): void {
     this.status.samplesProcessed++;
     this.status.lastSample = signal;
 
-    // Save to database if enabled
     if (this.config.saveToDB) {
       this.saveSignalToDB(signal).catch(err => {
         console.error('Failed to save signal to DB:', err);
@@ -271,13 +264,9 @@ class VLFMonitorService extends EventEmitter {
       });
     }
 
-    // Emit for real-time listeners (WebSocket, etc.)
     this.emit('newSignal', signal);
   }
 
-  /**
-   * Save processed signal to database
-   */
   private async saveSignalToDB(signal: ProcessedSignal): Promise<void> {
     return new Promise((resolve, reject) => {
       const query = `

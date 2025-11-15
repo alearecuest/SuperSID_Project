@@ -37,7 +37,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
 
   useEffect(() => {
     loadDashboardData();
-    const interval = setInterval(loadDashboardData, 30000); // Update every 30 seconds
+    const interval = setInterval(loadDashboardData, 5000); // Update every 30 seconds
     return () => clearInterval(interval);
   }, [stationId]);
 
