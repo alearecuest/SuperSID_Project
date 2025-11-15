@@ -1,3 +1,13 @@
+/**
+ * SuperSID Service (Updated)
+ * 
+ * Now integrates with real VLF monitoring services.
+ * Maintains backward compatibility with existing API endpoints.
+ */
+
+import { vlfMonitorService } from './vlf-monitor.service.js';
+import type { ProcessedSignal } from './signal-processing.service.js';
+
 export interface VLFSignal {
   timestamp: string;
   frequency: number;
@@ -17,60 +27,28 @@ export interface SuperSIDData {
 }
 
 class SuperSIDService {
-  private signalBuffer: VLFSignal[] = [];
-  private maxBufferSize: number = 1440;
-
-  processRawSignal(
-    frequency: number,
-    amplitude: number,
-    phase: number,
-    noiseLevel: number
-  ): VLFSignal {
-    const snr = amplitude - noiseLevel;
-    const quality = Math.min(100, Math.max(0, (snr + 20) * 2.5));
-
-    const signal: VLFSignal = {
-      timestamp: new Date().toISOString(),
-      frequency,
-      amplitude,
-      phase,
-      snr,
-      quality,
-    };
-
-    this.signalBuffer.push(signal);
-
-    if (this.signalBuffer.length > this.maxBufferSize) {
-      this.signalBuffer.shift();
-    }
-
-    console.log('📡 SuperSID signal processed:', signal);
-    return signal;
-  }
-
+  /**
+   * Get VLF data for an observatory
+   * Now uses real data from VLF Monitor Service
+   */
   getData(observatoryId: number): SuperSIDData {
-    const averageAmplitude =
-      this.signalBuffer.length > 0
-        ? this.signalBuffer.reduce((sum, s) => sum + s.amplitude, 0) /
-          this.signalBuffer.length
-        : 0;
+    // Get latest signals from VLF monitor
+    const latestSignals = vlfMonitorService.getLatestData(60); // Last 60 samples
 
-    const peakAmplitude =
-      this.signalBuffer.length > 0
-        ? Math.max(...this.signalBuffer.map(s => s.amplitude))
-        : 0;
+    // Convert ProcessedSignal to VLFSignal format
+    const signals: VLFSignal[] = latestSignals.map(this.convertToVLFSignal);
 
-    const averageNoise =
-      this.signalBuffer.length > 0
-        ? this.signalBuffer.reduce((sum, s) => sum + (s.amplitude - s.snr), 0) /
-          this.signalBuffer.length
-        : 0;
-
-    const disturbanceIndex = this.calculateDisturbanceIndex();
+    // Calculate metrics
+    const averageAmplitude = this.calculateAverage(signals.map(s => s.amplitude));
+    const peakAmplitude = this.calculatePeak(signals.map(s => s.amplitude));
+    const averageNoise = this.calculateAverage(
+      latestSignals.map(s => s.noiseFloor)
+    );
+    const disturbanceIndex = this.calculateDisturbanceIndex(signals);
 
     return {
       observatoryId,
-      signals: this.signalBuffer,
+      signals,
       averageAmplitude,
       peakAmplitude,
       noiseLevel: averageNoise,
@@ -78,41 +56,97 @@ class SuperSIDService {
     };
   }
 
-  private calculateDisturbanceIndex(): number {
-    if (this.signalBuffer.length < 2) return 0;
-
-    const mean =
-      this.signalBuffer.reduce((sum, s) => sum + s.amplitude, 0) /
-      this.signalBuffer.length;
-    const variance =
-      this.signalBuffer.reduce((sum, s) => sum + Math.pow(s.amplitude - mean, 2), 0) /
-      this.signalBuffer.length;
-    const stdDev = Math.sqrt(variance);
-
-    const index = Math.min(100, (stdDev / mean) * 100);
-    return isNaN(index) ? 0 : index;
-  }
-
+  /**
+   * Detect anomalies in VLF signals
+   */
   detectAnomalies(): VLFSignal[] {
-    if (this.signalBuffer.length < 10) return [];
+    const latestSignals = vlfMonitorService.getLatestData(1440); // Last 24 hours
+    
+    if (latestSignals.length < 10) return [];
 
-    const mean =
-      this.signalBuffer.reduce((sum, s) => sum + s.amplitude, 0) /
-      this.signalBuffer.length;
-    const variance =
-      this.signalBuffer.reduce((sum, s) => sum + Math.pow(s.amplitude - mean, 2), 0) /
-      this.signalBuffer.length;
-    const stdDev = Math.sqrt(variance);
+    const amplitudes = latestSignals.map(s => s.amplitude);
+    const mean = this.calculateAverage(amplitudes);
+    const stdDev = this.calculateStdDev(amplitudes, mean);
 
-    return this.signalBuffer.filter(s => s.amplitude > mean + 2 * stdDev);
+    // Find signals 2 std deviations away from mean
+    return latestSignals
+      .filter(s => Math.abs(s.amplitude - mean) > 2 * stdDev)
+      .map(this.convertToVLFSignal);
   }
 
-  clearBuffer(): void {
-    this.signalBuffer = [];
-  }
-
+  /**
+   * Get latest signals
+   */
   getLatestSignals(count: number = 60): VLFSignal[] {
-    return this.signalBuffer.slice(Math.max(0, this.signalBuffer.length - count));
+    const signals = vlfMonitorService.getLatestData(count);
+    return signals.map(this.convertToVLFSignal);
+  }
+
+  /**
+   * Clear buffer (for backward compatibility)
+   */
+  clearBuffer(): void {
+    console.log('Buffer clear requested (handled by VLF Monitor Service)');
+  }
+
+  // ========== PRIVATE HELPERS ==========
+
+  /**
+   * Convert ProcessedSignal to VLFSignal format
+   */
+  private convertToVLFSignal(signal: ProcessedSignal): VLFSignal {
+    return {
+      timestamp: new Date(signal.timestamp).toISOString(),
+      frequency: signal.frequency,
+      amplitude: signal.amplitude,
+      phase: signal.phase,
+      snr: signal.snr,
+      quality: signal.quality,
+    };
+  }
+
+  /**
+   * Calculate average
+   */
+  private calculateAverage(values: number[]): number {
+    if (values.length === 0) return 0;
+    return values.reduce((sum, v) => sum + v, 0) / values.length;
+  }
+
+  /**
+   * Calculate peak value
+   */
+  private calculatePeak(values: number[]): number {
+    if (values.length === 0) return 0;
+    return Math.max(...values);
+  }
+
+  /**
+   * Calculate standard deviation
+   */
+  private calculateStdDev(values: number[], mean: number): number {
+    if (values.length < 2) return 0;
+    
+    const variance = values.reduce(
+      (sum, v) => sum + Math.pow(v - mean, 2),
+      0
+    ) / values.length;
+    
+    return Math.sqrt(variance);
+  }
+
+  /**
+   * Calculate disturbance index
+   */
+  private calculateDisturbanceIndex(signals: VLFSignal[]): number {
+    if (signals.length < 2) return 0;
+
+    const amplitudes = signals.map(s => s.amplitude);
+    const mean = this.calculateAverage(amplitudes);
+    const stdDev = this.calculateStdDev(amplitudes, mean);
+
+    const index = Math.min(100, (stdDev / Math.abs(mean)) * 100);
+    return isNaN(index) ? 0 : index;
   }
 }
 

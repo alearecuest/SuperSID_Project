@@ -29,10 +29,21 @@ export class APIClient {
     const contentType = response.headers.get('content-type');
     let data;
 
-    if (contentType?.includes('application/json')) {
-      data = await response.json();
-    } else {
-      data = await response.text();
+    try {
+      if (contentType?.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        // Try to parse as JSON even if content-type is wrong
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = text;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to parse response:', error);
+      data = null;
     }
 
     if (!response.ok) {

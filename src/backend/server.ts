@@ -9,6 +9,8 @@ import { solarCenterService } from './services/solar-center.service.js';
 import { spaceWeatherService } from './services/space-weather.service.js';
 import { superSIDService } from './services/supersid.service.js';
 import { correlationService } from './services/correlation.service.js';
+import { vlfMonitorService } from './services/vlf-monitor.service.js';
+import { audioCaptureService } from './services/audio-capture.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,15 +21,30 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../../public')));
 
+// CORS middleware - Must be before routes
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  
+  // Handle preflight OPTIONS requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
   next();
-});
+});  
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health/status', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health/version', (_req, res) => {
+  res.json({ version: '1.0.0', timestamp: new Date().toISOString() });
 });
 
 app.use('/api/observatory', observatoryRoutes);
@@ -59,8 +76,8 @@ app.get('/api/analysis/space-weather/forecast', async (req, res) => {
 app.get('/api/analysis/vlf/:observatoryId', (req, res) => {
   try {
     const observatoryId = parseInt(req.params.observatoryId);
-    const vlsData = superSIDService.getData(observatoryId);
-    res.json({ success: true, data: vlsData });
+    const vlfData = superSIDService.getData(observatoryId);
+    res.json({ success: true, data: vlfData });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch VLF data' });
@@ -69,6 +86,7 @@ app.get('/api/analysis/vlf/:observatoryId', (req, res) => {
 
 app.get('/api/analysis/vlf/:observatoryId/anomalies', (req, res) => {
   try {
+    const observatoryId = parseInt(req.params.observatoryId);
     const anomalies = superSIDService.detectAnomalies();
     res.json({ success: true, data: anomalies, count: anomalies.length });
   } catch (error) {
@@ -110,6 +128,130 @@ app.get('/api/analysis/dashboard/:observatoryId', async (req, res) => {
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch dashboard data' });
+  }
+});
+
+// ========== VLF MONITORING API (REAL-TIME) ==========
+
+app.post('/api/vlf-monitor/start', async (req, res) => {
+  try {
+    const { stationId } = req.body;
+    
+    if (!stationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Station ID is required' 
+      });
+    }
+
+    await vlfMonitorService.startMonitoring(stationId);
+    
+    res.json({ 
+      success: true, 
+      message: 'VLF monitoring started',
+      status: vlfMonitorService.getStatus()
+    });
+  } catch (error: any) {
+    console.error('Error starting VLF monitoring:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+app.post('/api/vlf-monitor/stop', (req, res) => {
+  try {
+    vlfMonitorService.stopMonitoring();
+    
+    res.json({ 
+      success: true, 
+      message: 'VLF monitoring stopped',
+      status: vlfMonitorService.getStatus()
+    });
+  } catch (error: any) {
+    console.error('Error stopping VLF monitoring:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+app.get('/api/vlf-monitor/status', (req, res) => {
+  try {
+    const status = vlfMonitorService.getStatus();
+    res.json({ success: true, data: status });
+  } catch (error: any) {
+    console.error('Error getting monitor status:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+app.get('/api/vlf-monitor/latest/:count?', (req, res) => {
+  try {
+    const count = req.params.count ? parseInt(req.params.count) : 60;
+    const data = vlfMonitorService.getLatestData(count);
+    
+    res.json({ 
+      success: true, 
+      data,
+      count: data.length
+    });
+  } catch (error: any) {
+    console.error('Error getting latest data:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+app.get('/api/vlf-monitor/historical/:stationId', async (req, res) => {
+  try {
+    const stationId = parseInt(req.params.stationId);
+    const { startTime, endTime } = req.query;
+
+    if (!startTime || !endTime) {
+      return res.status(400).json({
+        success: false,
+        error: 'startTime and endTime query parameters are required'
+      });
+    }
+
+    const start = new Date(startTime as string);
+    const end = new Date(endTime as string);
+
+    const data = await vlfMonitorService.getHistoricalData(stationId, start, end);
+
+    res.json({
+      success: true,
+      data,
+      count: data.length,
+      range: { start: start.toISOString(), end: end.toISOString() }
+    });
+  } catch (error: any) {
+    console.error('Error getting historical data:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/audio-devices', async (req, res) => {
+  try {
+    const devices = await audioCaptureService.listAudioDevices();
+    res.json({ success: true, data: devices });
+  } catch (error: any) {
+    console.error('Error listing audio devices:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
   }
 });
 
@@ -175,19 +317,32 @@ app.use((_req, res) => {
 app.listen(PORT, () => {
   console.log(`\nServer running on http://localhost:${PORT}\n`);
   console.log('API Endpoints:');
-  console.log('Observatory: POST /api/observatory/setup');
-  console.log('Signals: GET /api/signals/:observatoryId/:stationId');
+  console.log('');
+  console.log('Observatory:');
+  console.log('POST /api/observatory/setup');
+  console.log('');
+  console.log('Signals:');
+  console.log('GET /api/signals/:observatoryId/:stationId');
+  console.log('');
+  console.log('VLF Monitoring (Real-Time):');
+  console.log('POST /api/vlf-monitor/start');
+  console.log('POST /api/vlf-monitor/stop');
+  console.log('GET  /api/vlf-monitor/status');
+  console.log('GET  /api/vlf-monitor/latest/:count?');
+  console.log('GET  /api/vlf-monitor/historical/:stationId?startTime=...&endTime=...');
+  console.log('GET  /api/audio-devices');
   console.log('');
   console.log('Space Weather & VLF Analysis:');
-  console.log('GET /api/analysis/space-weather');
-  console.log('GET /api/analysis/space-weather/forecast');
-  console.log('GET /api/analysis/vlf/:observatoryId');
-  console.log('GET /api/analysis/vlf/:observatoryId/anomalies');
+  console.log('GET  /api/analysis/space-weather');
+  console.log('GET  /api/analysis/space-weather/forecast');
+  console.log('GET  /api/analysis/vlf/:observatoryId');
+  console.log('GET  /api/analysis/vlf/:observatoryId/anomalies');
   console.log('POST /api/analysis/correlate/:observatoryId');
-  console.log('GET /api/analysis/dashboard/:observatoryId');
+  console.log('GET  /api/analysis/dashboard/:observatoryId');
   console.log('');
   console.log('Solar Center API:');
   console.log('POST /api/solar-center/validate');
   console.log('POST /api/solar-center/send-daily');
-  console.log('GET /api/solar-center/history\n');
+  console.log('GET  /api/solar-center/history');
+  console.log('');
 });

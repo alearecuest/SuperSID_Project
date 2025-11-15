@@ -22,14 +22,14 @@ export interface AppConfig {
 }
 
 const DEFAULT_CONFIG: AppConfig = {
-  observatoryId: 0,
-  observatoryName: 'My Observatory',
-  institution: '',
-  location: '',
-  latitude: 0,
-  longitude: 0,
-  altitude: 0,
-  timezone: 'UTC',
+  observatoryId: 1,
+  observatoryName: 'Test Observatory',
+  institution: 'Home Lab',
+  location: 'Buenos Aires',
+  latitude: -34.6037,
+  longitude: -58.3816,
+  altitude: 25,
+  timezone: 'America/Argentina/Buenos_Aires',
   solarCenterApiKey: '',
   solarCenterContact: '',
   monitoredStations: [],
@@ -76,13 +76,13 @@ export class ConfigService {
         const stored = localStorage.getItem(CONFIG_KEY);
         if (stored) {
           const loaded = JSON.parse(stored);
-          return loaded.observatoryId || 0;
+          return loaded.observatoryId || 1;
         }
       }
     } catch (error) {
       console.error('Error loading observatory ID:', error);
     }
-    return 0;
+    return 1;
   }
 
   async saveConfig(partial: Partial<AppConfig>): Promise<boolean> {
@@ -109,6 +109,49 @@ export class ConfigService {
         ...this.config.audioSettings,
         ...audioSettings,
       },
+    });
+  }
+
+  initialize(): AppConfig {
+    console.log('✅ ConfigService initialized');
+    console.log('📍 Observatory ID:', this.getObservatoryId());
+    console.log('🏛️ Observatory Name:', this.config.observatoryName);
+    
+    if (typeof localStorage !== 'undefined') {
+      const stored = localStorage.getItem(CONFIG_KEY);
+      if (!stored) {
+        localStorage.setItem(CONFIG_KEY, JSON.stringify(this.config));
+        console.log('💾 Initial config saved to localStorage');
+      }
+    }
+    
+    return this.getConfig();
+  }
+
+  isConfigured(): boolean {
+    const config = this.getConfig();
+    const isValid = config.observatoryId > 0 && config.observatoryName.length > 0;
+    console.log('🔍 isConfigured check:', isValid, 'ID:', config.observatoryId);
+    return isValid;
+  }
+
+  async saveObservatory(observatoryData: any): Promise<boolean> {
+    return this.saveConfig({
+      observatoryId: observatoryData.id,
+      observatoryName: observatoryData.name,
+      institution: observatoryData.institution || '',
+      location: observatoryData.location || '',
+      latitude: observatoryData.latitude || 0,
+      longitude: observatoryData.longitude || 0,
+      altitude: observatoryData.altitude || 0,
+      timezone: observatoryData.timezone || 'UTC',
+      solarCenterApiKey: observatoryData.solarCenterApiKey || '',
+    });
+  }
+
+  async updateMonitoredStations(stationIds: string[]): Promise<boolean> {
+    return this.saveConfig({
+      monitoredStations: stationIds,
     });
   }
 }
