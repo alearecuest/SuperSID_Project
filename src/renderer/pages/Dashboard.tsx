@@ -1,63 +1,121 @@
 import React, { useState, useEffect } from 'react';
+import { analysisService, DashboardData, VLFSignal } from '../services/analysis.service';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
 import '../styles/pages.css';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 interface DashboardProps {
   stationId: number;
 }
 
-interface SignalData {
-  frequency: number;
-  amplitude: number;
-  timestamp: string;
-}
-
-interface StationStats {
-  totalObservations: number;
-  sidEventsDetected: number;
-  uptime: string;
-  lastUpdate: string;
-}
-
 const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
-  const [stats, setStats] = useState<StationStats>({
-    totalObservations: 0,
-    sidEventsDetected: 0,
-    uptime: '99.8%',
-    lastUpdate: new Date().toISOString(),
-  });
-
-  const [recentSignals, setRecentSignals] = useState<SignalData[]>([]);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboardData();
-    const interval = setInterval(loadDashboardData, 5000);
+    const interval = setInterval(loadDashboardData, 30000); // Update every 30 seconds
     return () => clearInterval(interval);
   }, [stationId]);
 
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
-      const mockData: SignalData[] = [
-        { frequency: 24000, amplitude: 0.85, timestamp: new Date().toISOString() },
-        { frequency: 25200, amplitude: 0.72, timestamp: new Date(Date.now() - 60000).toISOString() },
-        { frequency: 19800, amplitude: 0.91, timestamp: new Date(Date.now() - 120000).toISOString() },
-      ];
-
-      setRecentSignals(mockData);
-      setStats(prev => ({
-        ...prev,
-        totalObservations: prev.totalObservations + 3,
-        lastUpdate: new Date().toISOString(),
-      }));
+      setError(null);
+      console.log(`📊 Loading dashboard data for observatory ${stationId}...`);
+      
+      const data = await analysisService.getDashboard(stationId);
+      setDashboardData(data);
+      
+      console.log(`✅ Dashboard data loaded: ${data.vlsData.signals.length} signals`);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
+      setError('Failed to load dashboard data. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isLoading && recentSignals.length === 0) {
+  // Prepare chart data
+  const getChartData = () => {
+    if (!dashboardData || !dashboardData.vlsData.signals.length) {
+      return null;
+    }
+
+    const signals = dashboardData.vlsData.signals.slice(-100); // Last 100 points
+
+    return {
+      labels: signals.map(s => {
+        const date = new Date(s.timestamp);
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      }),
+      datasets: [
+        {
+          label: 'VLF Amplitude',
+          data: signals.map(s => s.amplitude),
+          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: 'rgba(75, 192, 192, 0.1)',
+          fill: true,
+          tension: 0.4,
+        },
+      ],
+    };
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'VLF Signal Amplitude (Last 100 readings)',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Amplitude (dB)',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Time (UTC)',
+        },
+      },
+    },
+  };
+
+  if (isLoading && !dashboardData) {
     return (
       <div className="page-container">
         <div className="loading-state">
@@ -68,83 +126,147 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="page-container">
+        <div className="error-state">
+          <h3>⚠️ Error</h3>
+          <p>{error}</p>
+          <button className="btn-primary" onClick={loadDashboardData}>
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="page-container">
+        <div className="error-state">
+          <h3>No Data Available</h3>
+          <p>No dashboard data found for station {stationId}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const chartData = getChartData();
+
   return (
     <div className="page-container">
       <div className="page-header">
         <h1>Dashboard</h1>
-        <p>Real-time VLF signal monitoring for Station {stationId}</p>
+        <p>Real-time VLF signal monitoring for Observatory {stationId}</p>
+        {dashboardData.vlsData.signals.length > 0 && (
+          <span className="data-badge">
+            {dashboardData.vlsData.signals.length} signals loaded
+          </span>
+        )}
       </div>
 
       {/* Stats Grid */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon"></div>
+          <div className="stat-icon">📡</div>
           <div className="stat-content">
-            <div className="stat-label">Total Observations</div>
-            <div className="stat-value">{stats.totalObservations.toLocaleString()}</div>
+            <div className="stat-label">Total Signals</div>
+            <div className="stat-value">{dashboardData.vlsData.signals.length.toLocaleString()}</div>
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon"></div>
+          <div className="stat-icon">📊</div>
           <div className="stat-content">
-            <div className="stat-label">SID Events Detected</div>
-            <div className="stat-value">{stats.sidEventsDetected}</div>
+            <div className="stat-label">Avg Amplitude</div>
+            <div className="stat-value">{dashboardData.vlsData.averageAmplitude.toFixed(2)} dB</div>
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon"></div>
+          <div className="stat-icon">⚡</div>
           <div className="stat-content">
-            <div className="stat-label">System Uptime</div>
-            <div className="stat-value">{stats.uptime}</div>
+            <div className="stat-label">Peak Amplitude</div>
+            <div className="stat-value">{dashboardData.vlsData.peakAmplitude.toFixed(2)} dB</div>
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon"></div>
+          <div className="stat-icon">🌞</div>
           <div className="stat-content">
-            <div className="stat-label">Last Update</div>
-            <div className="stat-value">
-              {new Date(stats.lastUpdate).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-              })}
-            </div>
+            <div className="stat-label">Solar Activity</div>
+            <div className="stat-value">{dashboardData.solarActivity.xrayClass} Class</div>
+            <div className="stat-sublabel">K-Index: {dashboardData.solarActivity.kIndex}</div>
           </div>
         </div>
       </div>
 
-      {/* Recent Signals */}
+      {/* VLF Signal Chart */}
+      {chartData && (
+        <div className="section-card">
+          <div className="section-header">
+            <h2>VLF Signal Timeline</h2>
+            <button className="btn-secondary" onClick={loadDashboardData}>
+              🔄 Refresh
+            </button>
+          </div>
+          <div className="chart-container" style={{ height: '400px', padding: '20px' }}>
+            <Line data={chartData} options={chartOptions} />
+          </div>
+        </div>
+      )}
+
+      {/* Space Weather Info */}
+      <div className="section-card">
+        <div className="section-header">
+          <h2>☀️ Space Weather Conditions</h2>
+        </div>
+        <div className="space-weather-grid">
+          <div className="weather-item">
+            <span className="weather-label">X-Ray Class:</span>
+            <span className="weather-value">{dashboardData.solarActivity.xrayClass}</span>
+          </div>
+          <div className="weather-item">
+            <span className="weather-label">K-Index:</span>
+            <span className="weather-value">{dashboardData.solarActivity.kIndex}</span>
+          </div>
+          <div className="weather-item">
+            <span className="weather-label">Solar Flux:</span>
+            <span className="weather-value">{dashboardData.solarActivity.solarFlux} sfu</span>
+          </div>
+          <div className="weather-item">
+            <span className="weather-label">Active Regions:</span>
+            <span className="weather-value">{dashboardData.solarActivity.activeRegions}</span>
+          </div>
+          <div className="weather-item">
+            <span className="weather-label">Sunspots:</span>
+            <span className="weather-value">{dashboardData.solarActivity.sunspots}</span>
+          </div>
+          <div className="weather-item">
+            <span className="weather-label">Magnetic Storm:</span>
+            <span className="weather-value">{dashboardData.solarActivity.magneticStorm}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Signals Table */}
       <div className="section-card">
         <div className="section-header">
           <h2>Recent Signal Detections</h2>
-          <button className="btn-secondary">View All</button>
+          <span className="signal-count">Last 10 signals</span>
         </div>
 
         <div className="signals-table">
           <div className="table-header">
-            <div className="table-cell">Frequency (Hz)</div>
-            <div className="table-cell">Amplitude</div>
             <div className="table-cell">Timestamp</div>
-            <div className="table-cell">Status</div>
+            <div className="table-cell">Frequency (Hz)</div>
+            <div className="table-cell">Amplitude (dB)</div>
+            <div className="table-cell">SNR</div>
+            <div className="table-cell">Phase</div>
           </div>
 
-          {recentSignals.map((signal, idx) => (
+          {dashboardData.vlsData.signals.slice(-10).reverse().map((signal, idx) => (
             <div key={idx} className="table-row">
-              <div className="table-cell">
-                <span className="frequency-badge">{signal.frequency.toLocaleString()}</span>
-              </div>
-              <div className="table-cell">
-                <div className="amplitude-bar">
-                  <div
-                    className="amplitude-fill"
-                    style={{ width: `${signal.amplitude * 100}%` }}
-                  ></div>
-                </div>
-                <span className="amplitude-value">{(signal.amplitude * 100).toFixed(0)}%</span>
-              </div>
               <div className="table-cell">
                 <span className="timestamp">
                   {new Date(signal.timestamp).toLocaleTimeString('en-US', {
@@ -155,7 +277,22 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
                 </span>
               </div>
               <div className="table-cell">
-                <span className="status-badge status-normal">Normal</span>
+                <span className="frequency-badge">{signal.frequency.toLocaleString()} Hz</span>
+              </div>
+              <div className="table-cell">
+                <div className="amplitude-bar">
+                  <div
+                    className="amplitude-fill"
+                    style={{ width: `${Math.min((signal.amplitude / 100) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <span className="amplitude-value">{signal.amplitude.toFixed(2)} dB</span>
+              </div>
+              <div className="table-cell">
+                <span className="snr-value">{signal.snr.toFixed(1)} dB</span>
+              </div>
+              <div className="table-cell">
+                <span className="phase-value">{signal.phase.toFixed(1)}°</span>
               </div>
             </div>
           ))}
@@ -164,17 +301,17 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
 
       {/* Quick Actions */}
       <div className="quick-actions">
-        <button className="btn-primary">
-          <span></span> Start Recording
+        <button className="btn-primary" onClick={loadDashboardData}>
+          <span>🔄</span> Refresh Data
         </button>
         <button className="btn-secondary">
-          <span></span> Export Data
+          <span>📥</span> Export Data
         </button>
         <button className="btn-secondary">
-          <span></span> View Reports
+          <span>📊</span> View Reports
         </button>
         <button className="btn-secondary">
-          <span></span> Calibrate
+          <span>⚙️</span> Settings
         </button>
       </div>
     </div>

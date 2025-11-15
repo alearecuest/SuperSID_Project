@@ -171,13 +171,13 @@ const VLFSignals: React.FC<{ observatoryId?: number }> = ({ observatoryId = 999 
                       <span
                         style={{
                           padding: '0.25rem 0.75rem',
-                          backgroundColor: getQualityBg(signal.quality),
-                          color: getQualityColor(signal.quality),
+                          backgroundColor: getQualityBg(signal.quality || 0),
+                          color: getQualityColor(signal.quality || 0),
                           borderRadius: '4px',
                           fontWeight: '600',
                         }}
                       >
-                        {signal.quality.toFixed(0)}%
+                        {(signal.quality || 0).toFixed(0)}%
                       </span>
                     </td>
                   </tr>

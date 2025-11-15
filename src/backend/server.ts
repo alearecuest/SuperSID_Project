@@ -5,6 +5,7 @@ import { database } from './database/index.js';
 import observatoryRoutes from './routes/observatory.routes.js';
 import stationsRoutes from './routes/stations.routes.js';
 import signalsRoutes from './routes/signals.routes.js';
+import simulationRoutes from './routes/simulation.routes.js';
 import { solarCenterService } from './services/solar-center.service.js';
 import { spaceWeatherService } from './services/space-weather.service.js';
 import { superSIDService } from './services/supersid.service.js';
@@ -50,6 +51,12 @@ app.get('/api/health/version', (_req, res) => {
 app.use('/api/observatory', observatoryRoutes);
 app.use('/api/stations', stationsRoutes);
 app.use('/api/signals', signalsRoutes);
+
+// Simulation endpoints (only for development/demo)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/simulation', simulationRoutes);
+  console.log('⚠️  Simulation API enabled (development mode)');
+}
 
 // ========== ANALYSIS API - SPACE WEATHER + VLF ==========
 

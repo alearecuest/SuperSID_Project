@@ -186,6 +186,14 @@ export const endpoints = {
     timeseries: (stationId: number) => `/api/stations/${stationId}/analysis/timeseries`,
     anomalies: (stationId: number) => `/api/stations/${stationId}/analysis/anomalies`,
     correlation: () => '/api/analysis/correlation',
+    vlf: (observatoryId: number) => `/api/analysis/vlf/${observatoryId}`,           // ADD
+    spaceWeather: () => '/api/analysis/space-weather',                              // ADD
+    dashboard: (observatoryId: number) => `/api/analysis/dashboard/${observatoryId}`, // ADD
+  },
+
+  simulation: {                                                                     // ADD THIS
+    generateData: (observatoryId: number) => `/api/simulation/generate-vlf-data/${observatoryId}`,
+    status: () => '/api/simulation/status',
   },
 
   data: {
@@ -225,6 +233,22 @@ export async function getSIDEvents(stationId: number, startTime?: string, endTim
   if (endTime) params.append('endTime', endTime);
   const query = params.toString() ? `?${params.toString()}` : '';
   return apiClient.get(endpoints.events.list(stationId) + query);
+}
+
+export async function getDashboardData(observatoryId: number) {
+  return apiClient.get(endpoints.analysis.dashboard(observatoryId));
+}
+
+export async function getVLFData(observatoryId: number) {
+  return apiClient.get(endpoints.analysis.vlf(observatoryId));
+}
+
+export async function getSpaceWeatherData() {
+  return apiClient.get(endpoints.analysis.spaceWeather());
+}
+
+export async function generateSimulationData(observatoryId: number, hours: number = 24) {
+  return apiClient.post(endpoints.simulation.generateData(observatoryId), { hours });
 }
 
 export async function getFrequencyAnalysis(stationId: number) {
