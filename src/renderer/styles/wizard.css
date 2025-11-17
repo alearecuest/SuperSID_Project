@@ -1,0 +1,456 @@
+/* ========== WIZARD STYLES ========== */
+
+.wizard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.wizard-progress {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 2rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  transition: width 0.3s ease;
+}
+
+.wizard-progress p {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.wizard-content {
+  background: #1e293b;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 900px;
+  padding: 3rem;
+}
+
+.wizard-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.wizard-header h1 {
+  font-size: 2.5rem;
+  color: #f1f5f9;
+  margin-bottom: 0.5rem;
+}
+
+.wizard-header p {
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+
+.wizard-body {
+  margin-bottom: 2rem;
+}
+
+.wizard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid #334155;
+}
+
+/* Welcome Page */
+.welcome-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.feature-card {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateY(-4px);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+  color: #f1f5f9;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.feature-card p {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.wizard-info {
+  background: rgba(15, 23, 42, 0.5);
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.wizard-info h3 {
+  color: #60a5fa;
+  margin-bottom: 1rem;
+}
+
+.wizard-info p {
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.wizard-info p:last-child {
+  margin-bottom: 0;
+}
+
+/* Buttons */
+.btn-large {
+  padding: 1rem 3rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Form Sections in Wizard */
+.wizard-body .form-section {
+  background: rgba(15, 23, 42, 0.3);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.wizard-body .form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.wizard-body .form-row:last-child {
+  margin-bottom: 0;
+}
+
+.wizard-body .form-group {
+  margin-bottom: 0;
+}
+
+.wizard-body .form-group label {
+  display: block;
+  color: #e2e8f0;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.wizard-body .form-group input,
+.wizard-body .form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #f1f5f9;
+  font-size: 1rem;
+}
+
+.wizard-body .form-group input:focus,
+.wizard-body .form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.wizard-body .form-group small {
+  display: block;
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Audio Test Section */
+.audio-test-section {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.audio-test-section h3 {
+  color: #60a5fa;
+  margin-bottom: 0.5rem;
+}
+
+.audio-test-section p {
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
+
+/* Stations Grid in Wizard */
+.wizard-body .stations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.wizard-body .station-card {
+  display: flex;
+  align-items: start;
+  gap: 0.75rem;
+  background: rgba(15, 23, 42, 0.5);
+  border: 2px solid #334155;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wizard-body .station-card:hover {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: #475569;
+}
+
+.wizard-body .station-card.selected {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+}
+
+.wizard-body .station-card input[type="checkbox"] {
+  margin-top: 0.25rem;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.wizard-body .station-info {
+  flex: 1;
+}
+
+.wizard-body .station-info strong {
+  color: #f1f5f9;
+  font-size: 1.1rem;
+}
+
+.status-active {
+  color: #22c55e;
+}
+
+.status-inactive {
+  color: #ef4444;
+}
+
+.status-intermittent {
+  color: #eab308;
+}
+
+/* Completion Summary */
+.completion-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.summary-card h3 {
+  color: #60a5fa;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.summary-card p {
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.summary-card p:last-child {
+  margin-bottom: 0;
+}
+
+.summary-card strong {
+  color: #f1f5f9;
+}
+
+.next-steps {
+  background: rgba(34, 197, 94, 0.05);
+  border-left: 4px solid #22c55e;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.next-steps h3 {
+  color: #4ade80;
+  margin-bottom: 1rem;
+}
+
+.next-steps ol {
+  color: #94a3b8;
+  padding-left: 1.5rem;
+  line-height: 1.8;
+}
+
+.next-steps li {
+  margin-bottom: 0.5rem;
+}
+
+/* Stats Row in Wizard */
+.wizard-body .stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.wizard-body .stat-card {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.wizard-body .stat-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.wizard-body .stat-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #3b82f6;
+}
+
+/* Filter Section in Wizard */
+.wizard-body .filter-section {
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .wizard-container {
+    padding: 1rem;
+  }
+
+  .wizard-content {
+    padding: 2rem 1.5rem;
+  }
+
+  .wizard-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .wizard-footer {
+    flex-direction: column;
+  }
+
+  .wizard-footer button {
+    width: 100%;
+  }
+
+  .welcome-features {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-body .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-body .stations-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Scrollbar for stations grid */
+.wizard-body .stations-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.wizard-body .stations-grid::-webkit-scrollbar-track {
+  background: #0f172a;
+  border-radius: 4px;
+}
+
+.wizard-body .stations-grid::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.wizard-body .stations-grid::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Info Box in Wizard */
+.wizard-body .info-box {
+  background: rgba(139, 92, 246, 0.05);
+  border-left: 4px solid #8b5cf6;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.wizard-body .info-box h3 {
+  color: #a78bfa;
+  margin-bottom: 1rem;
+}
+
+.wizard-body .info-box p,
+.wizard-body .info-box ul {
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.wizard-body .info-box ul {
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.wizard-body .info-box li {
+  margin-bottom: 0.5rem;
+}

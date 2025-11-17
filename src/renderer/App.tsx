@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
+import FirstTimeWizard from './pages/FirstTimeWizard';
 import Dashboard from './pages/Dashboard';
 import DataVisualization from './pages/DataVisualization';
 import StationManager from './pages/StationManager';
@@ -11,8 +12,9 @@ import SpaceWeather from './pages/SpaceWeather';
 import VLFSignals from './pages/VLFSignals';
 import Correlation from './pages/Correlation';
 import { configService } from './services/config.service';
+import VLFMonitor from './pages/VLFMonitor';
 
-type PageType = 'setup' | 'stations' | 'dashboard' | 'visualization' | 'analysis' | 'settings' | 'observatory-config' | 'space-weather' | 'vlf-signals' | 'correlation';
+type PageType = 'setup' | 'stations' | 'dashboard' | 'visualization' | 'analysis' | 'settings' | 'observatory-config' | 'space-weather' | 'vlf-monitor' | 'vlf-signals' | 'correlation';
 
 interface AppState {
   currentPage: PageType;
@@ -22,6 +24,7 @@ interface AppState {
   monitoredStations: string[];
   isConfigured: boolean;
   isLoading: boolean;
+  showWizard: boolean;
 }
 
 const App: React.FC = () => {
@@ -33,6 +36,7 @@ const App: React.FC = () => {
     monitoredStations: [],
     isConfigured: false,
     isLoading: true,
+    showWizard: false,
   });
 
   useEffect(() => {
@@ -42,25 +46,34 @@ const App: React.FC = () => {
 
   const initializeApp = async () => {
     try {
-      const config = await configService.initialize();
-      
-      initializeConnection();
+      // Check backend connection
+      await initializeConnection();
 
-      const isConfigured = configService.isConfigured();
+      // Check if wizard was completed
+      const wizardCompleted = localStorage.getItem('supersid-wizard-completed') === 'true';
       
+      // Load config
+      const config = configService.getConfig();
+      const isConfigured = config.observatoryId > 0 && config.observatoryName.length > 0;
+
+      console.log('App Initialization:');
+      console.log('  - Wizard completed:', wizardCompleted);
+      console.log('  - Is configured:', isConfigured);
+      console.log('  - Observatory ID:', config.observatoryId);
+
       setAppState(prev => ({
         ...prev,
         observatoryId: config.observatoryId,
-        monitoredStations: config.monitoredStations,
+        monitoredStations: config.monitoredStations || [],
         isConfigured,
-        currentPage: isConfigured ? 'dashboard' : 'setup',
+        showWizard: !wizardCompleted || !isConfigured,
+        currentPage: (wizardCompleted && isConfigured) ? 'dashboard' : 'setup',
         isLoading: false,
       }));
 
-      console.log('App initialized. Observatory ID:', config.observatoryId);
     } catch (error) {
       console.error('Error initializing app:', error);
-      setAppState(prev => ({ ...prev, isLoading: false }));
+      setAppState(prev => ({ ...prev, isLoading: false, showWizard: true }));
     }
   };
 
@@ -75,6 +88,26 @@ const App: React.FC = () => {
       console.error('Failed to connect to backend:', error);
       setAppState(prev => ({ ...prev, isConnected: false }));
     }
+  };
+
+  const handleWizardComplete = async () => {
+    console.log('Wizard completed');
+    
+    // Reload config
+    const config = configService.getConfig();
+    
+    setAppState(prev => ({
+      ...prev,
+      observatoryId: config.observatoryId,
+      monitoredStations: config.monitoredStations || [],
+      isConfigured: true,
+      showWizard: false,
+      currentPage: 'dashboard',
+    }));
+  };
+
+  const handlePageChange = (page: PageType) => {
+    setAppState(prev => ({ ...prev, currentPage: page }));
   };
 
   const handleObservatorySet = async (observatoryData: any) => {
@@ -129,19 +162,20 @@ const App: React.FC = () => {
     }
   };
 
-  const handlePageChange = (page: PageType) => {
-    setAppState(prev => ({ ...prev, currentPage: page }));
-  };
-
   const renderCurrentPage = () => {
     if (appState.isLoading) {
       return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-          <div style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#0f172a' }}>
+          <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+            <div className="spinner" style={{ margin: '0 auto 1rem' }}></div>
             <p>Loading SuperSID Pro...</p>
           </div>
         </div>
       );
+    }
+
+    if (appState.showWizard) {
+      return <FirstTimeWizard onComplete={handleWizardComplete} />;
     }
 
     switch (appState.currentPage) {
@@ -156,8 +190,8 @@ const App: React.FC = () => {
         return (
           <SelectVLFStations
             observatoryId={appState.observatoryId}
-            observatoryLat={37.4419}
-            observatoryLon={-122.1430}
+            observatoryLat={configService.getConfig().latitude}
+            observatoryLon={configService.getConfig().longitude}
             selectedStations={appState.monitoredStations}
             onStationsChange={handleStationsChange}
           />
@@ -177,6 +211,8 @@ const App: React.FC = () => {
         return <Analysis stationId={appState.observatoryId} />;
       case 'space-weather':
         return <SpaceWeather />;
+      case 'vlf-monitor':
+        return <VLFMonitor observatoryId={appState.observatoryId} />;
       case 'vlf-signals':
         return <VLFSignals observatoryId={appState.observatoryId} />;
       case 'correlation':
@@ -187,6 +223,10 @@ const App: React.FC = () => {
         return <Dashboard stationId={appState.observatoryId} />;
     }
   };
+
+  if (appState.showWizard) {
+    return renderCurrentPage();
+  }
 
   return (
     <Layout

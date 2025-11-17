@@ -98,7 +98,7 @@ const SpaceWeather: React.FC = () => {
 
           <div className="stat-card">
             <div className="stat-label">SOLAR FLUX (SFU)</div>
-            <div className="stat-value">{current.solarFlux}</div>
+            <div className="stat-value">{current.solarFlux.toFixed(1)}</div>
           </div>
 
           <div className="stat-card">
@@ -191,7 +191,7 @@ const SpaceWeather: React.FC = () => {
                   {day.kIndex}/9
                 </div>
                 <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem' }}>
-                  {day.solarFlux} SFU
+                  {day.solarFlux.toFixed(1)} SFU
                 </div>
               </div>
             ))}

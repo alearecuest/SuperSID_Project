@@ -185,6 +185,35 @@ app.get('/api/analysis/dashboard/:observatoryId', async (req, res) => {
 
 // ========== VLF MONITORING API (REAL-TIME) ==========
 
+// Test audio capture (for wizard)
+app.post('/api/vlf-monitor/test-audio', async (req, res) => {
+  try {
+    const { deviceId, sampleRate, duration = 3 } = req.body;
+    
+    console.log(`Testing audio: device=${deviceId}, rate=${sampleRate}, duration=${duration}s`);
+    
+    // Simulate audio test (in real implementation, would capture real audio)
+    await new Promise(resolve => setTimeout(resolve, duration * 1000));
+    
+    const peakLevel = -20 + Math.random() * 10; // Simulate -20 to -10 dB
+    
+    res.json({
+      success: true,
+      message: 'Audio test completed',
+      peakLevel,
+      duration,
+      deviceId,
+      sampleRate,
+    });
+  } catch (error: any) {
+    console.error('Audio test error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
 app.post('/api/vlf-monitor/start', async (req, res) => {
   try {
     const { stationId } = req.body;

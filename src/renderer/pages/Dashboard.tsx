@@ -230,7 +230,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stationId }) => {
           </div>
           <div className="weather-item">
             <span className="weather-label">Solar Flux:</span>
-            <span className="weather-value">{dashboardData.solarActivity.solarFlux} sfu</span>
+            <span className="weather-value">{dashboardData.solarActivity.solarFlux.toFixed(1)} sfu</span>
           </div>
           <div className="weather-item">
             <span className="weather-label">Active Regions:</span>

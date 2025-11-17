@@ -167,7 +167,7 @@ const Correlation: React.FC<{ observatoryId?: number }> = ({ observatoryId = 999
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#94a3b8' }}>Solar Flux:</span>
                 <span style={{ color: '#f1f5f9', fontWeight: '600' }}>
-                  {correlation.solarActivity.solarFlux} SFU
+                  {correlation.solarActivity.solarFlux.toFixed(1)} SFU
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
