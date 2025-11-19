@@ -179,6 +179,11 @@ class VLFMonitorService extends EventEmitter {
     endTime: Date
   ): Promise<ProcessedSignal[]> {
     return new Promise((resolve, reject) => {
+      if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+        reject(new Error('Invalid date parameters'));
+        return;
+      }
+  
       const query = `
         SELECT * FROM vlf_processed_signals
         WHERE station_id = ? 
@@ -186,7 +191,7 @@ class VLFMonitorService extends EventEmitter {
           AND timestamp <= ?
         ORDER BY timestamp ASC
       `;
-
+  
       database.all(
         query,
         [stationId, startTime.toISOString(), endTime.toISOString()],
@@ -196,9 +201,10 @@ class VLFMonitorService extends EventEmitter {
             reject(err);
             return;
           }
-
+  
           const signals: ProcessedSignal[] = rows.map(row => ({
-            timestamp: new Date(row.timestamp).getTime(),
+            id: row.id,
+            timestamp: row.timestamp,
             frequency: row.frequency,
             amplitude: row.amplitude,
             phase: row.phase,
@@ -207,7 +213,7 @@ class VLFMonitorService extends EventEmitter {
             rawAmplitude: row.raw_amplitude,
             noiseFloor: row.noise_floor,
           }));
-
+  
           resolve(signals);
         }
       );

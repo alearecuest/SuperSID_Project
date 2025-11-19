@@ -303,8 +303,8 @@ app.get('/api/vlf-monitor/historical/:stationId', async (req, res) => {
       });
     }
 
-    const start = new Date(startTime as string);
-    const end = new Date(endTime as string);
+    const start = new Date(parseInt(startTime as string));
+    const end = new Date(parseInt(endTime as string));
 
     const data = await vlfMonitorService.getHistoricalData(stationId, start, end);
 

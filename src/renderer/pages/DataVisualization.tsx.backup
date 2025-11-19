@@ -266,103 +266,16 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({ stationId }) => {
   };
 
   const renderSpectrogram = () => {
-    if (signals.length === 0) {
-      return (
-        <div className="visualization-container">
-          <div className="spectrogram-placeholder">
-            <div className="placeholder-content">
-              <div style={{ fontSize: '48px', marginBottom: '1rem' }}>SPEC</div>
-              <p>No data available</p>
-              <small>Start the VLF Monitor to collect data</small>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Group signals by time buckets
-    const timeBuckets: { [key: string]: VLFSignal[] } = {};
-    const bucketSize = 5 * 60 * 1000; // 5 minutes
-
-    signals.forEach(signal => {
-      const time = new Date(signal.timestamp).getTime();
-      const bucketKey = Math.floor(time / bucketSize) * bucketSize;
-      if (!timeBuckets[bucketKey]) {
-        timeBuckets[bucketKey] = [];
-      }
-      timeBuckets[bucketKey].push(signal);
-    });
-
-    // Get frequency range
-    const frequencies = signals.map(s => s.frequency);
-    const minFreq = Math.min(...frequencies);
-    const maxFreq = Math.max(...frequencies);
-    const freqBins = 20;
-    const freqStep = (maxFreq - minFreq) / freqBins || 1;
-
-    // Build heatmap data
-    const heatmapData: number[][] = [];
-    const timeLabels: string[] = [];
-
-    Object.keys(timeBuckets)
-      .sort()
-      .forEach(bucketKey => {
-        const bucketSignals = timeBuckets[bucketKey];
-        const freqData = new Array(freqBins).fill(0);
-
-        bucketSignals.forEach(signal => {
-          const binIndex = Math.floor((signal.frequency - minFreq) / freqStep);
-          if (binIndex >= 0 && binIndex < freqBins) {
-            freqData[binIndex] = Math.max(freqData[binIndex], signal.amplitude);
-          }
-        });
-
-        heatmapData.push(freqData);
-        timeLabels.push(new Date(parseInt(bucketKey)).toLocaleTimeString());
-      });
-
-    const flatData = heatmapData.flat().filter(v => v !== 0);
-    const minAmp = flatData.length > 0 ? Math.min(...flatData) : -10;
-    const maxAmp = flatData.length > 0 ? Math.max(...flatData) : 0;
-
-    const getColor = (value: number) => {
-      if (value === 0) return 'rgba(15, 23, 42, 0.8)';
-      const normalized = (value - minAmp) / (maxAmp - minAmp || 1);
-      const hue = 240 - normalized * 240; // Azul → Rojo
-      return `hsl(${hue}, 80%, 50%)`;
-    };
-
     return (
       <div className="visualization-container">
-        <div className="spectrogram-view">
-          <div className="spectrogram-grid">
-            {heatmapData.map((timeData, timeIdx) => (
-              <div key={timeIdx} className="spectrogram-column">
-                {timeData.map((amplitude, freqIdx) => (
-                  <div
-                    key={`${timeIdx}-${freqIdx}`}
-                    className="spectrogram-cell"
-                    style={{
-                      backgroundColor: getColor(amplitude),
-                      height: `${100 / freqBins}%`,
-                    }}
-                    title={`Time: ${timeLabels[timeIdx]}, Freq: ${(minFreq + freqIdx * freqStep).toFixed(0)} Hz, Amp: ${amplitude.toFixed(2)} dB`}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-          <div className="spectrogram-labels">
-            <div className="freq-axis">
-              <div>{(maxFreq / 1000).toFixed(1)} kHz</div>
-              <div>{((maxFreq + minFreq) / 2000).toFixed(1)} kHz</div>
-              <div>{(minFreq / 1000).toFixed(1)} kHz</div>
-            </div>
-            <div className="time-axis">
-              {timeLabels.filter((_, idx) => idx % Math.max(1, Math.ceil(timeLabels.length / 5)) === 0).map((label, idx) => (
-                <span key={idx}>{label}</span>
-              ))}
-            </div>
+        <div className="spectrogram-placeholder">
+          <div className="placeholder-content">
+            <div style={{ fontSize: '48px', marginBottom: '1rem' }}>SPEC</div>
+            <p>Spectrogram View</p>
+            <small>Coming soon: Real-time frequency analysis over time</small>
+            <small style={{ marginTop: '0.5rem', display: 'block' }}>
+              {signals.length} signals available for visualization
+            </small>
           </div>
         </div>
       </div>
