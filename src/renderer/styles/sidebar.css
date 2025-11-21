@@ -185,11 +185,11 @@
 
 @media (max-width: 768px) {
   .sidebar {
-    width: 70px;
+    width: 60px;
   }
 
   .sidebar.closed {
-    width: 70px;
+    width: 60px;
   }
 
   .sidebar-logo {
@@ -226,8 +226,8 @@
 }
 
 .nav-section-title {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.55rem;
+  font-weight: 500;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.1em;
